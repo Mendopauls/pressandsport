@@ -7,6 +7,24 @@
   <meta name="description" content="Press & Sport è un progetto editoriale dedicato a media, comunicazione e sponsorship nello sport.">
   <meta name="theme-color" content="#111111">
   <link rel="stylesheet" href="styles.css">
+  <script>
+    (function (s, e, n, d, er) {
+      s['Sender'] = er;
+      s[er] = s[er] || function () {
+        (s[er].q = s[er].q || []).push(arguments)
+      }, s[er].l = 1 * new Date();
+      s[er].on = function(event, callback) {
+        s[er].listeners = s[er].listeners || {};
+        (s[er].listeners[event] = s[er].listeners[event] || []).push(callback);
+      };
+      var a = e.createElement(n),
+          m = e.getElementsByTagName(n)[0];
+      a.async = 1;
+      a.src = d;
+      m.parentNode.insertBefore(a, m)
+    })(window, document, 'script', 'https://cdn.sender.net/accounts_resources/universal.js', 'sender');
+    sender('195811047a0242');
+  </script>
 </head>
 <body>
   <header class="site-header">
@@ -15,7 +33,8 @@
     </a>
     <nav class="nav" aria-label="Navigazione principale">
       <a href="#progetto">Progetto</a>
-      <a href="#articoli">Articoli</a>\n      <a href="#rubriche">Rubriche</a>
+      <a href="#articoli">Articoli</a>
+      <a href="#rubriche">Rubriche</a>
       <a href="#newsletter">Newsletter</a>
     </nav>
   </header>
@@ -29,7 +48,7 @@
         per capire come aumentare il valore mediatico e commerciale dello sport.
       </p>
       <div class="hero-actions">
-        <a class="button primary" href="#newsletter">Scopri la newsletter</a>
+        <a class="button primary" href="#newsletter">Iscriviti alla newsletter</a>
         <a class="button secondary" href="#progetto">Cos'è Press &amp; Sport</a>
       </div>
       <div class="hero-line" aria-hidden="true"></div>
@@ -100,13 +119,17 @@
     </section>
 
     <section class="newsletter" id="newsletter">
-      <div class="newsletter-badge">IN ARRIVO</div>
+      <div class="newsletter-badge">ISCRIZIONI APERTE</div>
       <h2>La newsletter di Press &amp; Sport.</h2>
       <p>
         Approfondimenti, casi studio e strumenti pratici dedicati a media, comunicazione e sponsorship nello sport.
       </p>
       <p class="newsletter-note">
-        Stiamo preparando il primo numero. L'iscrizione verrà attivata qui al lancio.
+        Inserisci nome ed email. Riceverai un messaggio per confermare l'iscrizione prima di entrare nella lista.
+      </p>
+      <div style="text-align: left" class="sender-form-field" data-sender-form-id="bqxvOr"></div>
+      <p class="newsletter-note">
+        Iscrivendoti accetti di ricevere la newsletter Press &amp; Sport. <a href="privacy.html">Informativa privacy</a>.
       </p>
     </section>
 
@@ -122,7 +145,7 @@
       <span class="brand-press">PRESS</span><span class="brand-amp">&amp;</span><span class="brand-sport">SPORT</span>
     </div>
     <p>Media, comunicazione e sponsorship nello sport.</p>
-    <p class="social-links"><a href="https://www.instagram.com/pressandsport/" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://www.linkedin.com/company/146625659" target="_blank" rel="noopener noreferrer">LinkedIn</a></p>
+    <p class="social-links"><a href="https://www.instagram.com/pressandsport/" target="_blank" rel="noopener noreferrer">Instagram</a> · <a href="https://www.linkedin.com/company/146625659" target="_blank" rel="noopener noreferrer">LinkedIn</a> · <a href="privacy.html">Privacy</a></p>
     <p class="copyright">© 2026 Press &amp; Sport. Progetto editoriale a cura di Paolo Savio.</p>
   </footer>
 </body>
