@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+<title id="title">Press &amp; Sport</title>
+<desc id="desc">Logo Press &amp; Sport</desc>
+<rect width="512" height="512" rx="48" fill="#111111"/>
+<text x="256" y="215" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="92" font-weight="800" fill="#ffffff" letter-spacing="-4">PRESS</text>
+<text x="256" y="305" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="800" fill="#ff3b30">&amp;</text>
+<text x="256" y="392" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="82" font-weight="800" fill="#ffffff" letter-spacing="-3">SPORT</text>
+</svg>
