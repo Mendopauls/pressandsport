@@ -44,7 +44,7 @@ for file_id, filename in FILES:
     while not done:
         _, done = downloader.next_chunk()
     raw = buffer.getvalue()
-    if not raw.startswith(b"\\x89PNG\\r\\n\\x1a\\n"):
+    if not raw.startswith(bytes([137, 80, 78, 71, 13, 10, 26, 10])):
         raise RuntimeError(f"Not a PNG: {filename}")
     with Image.open(io.BytesIO(raw)) as img:
         if img.size != (1080, 1350):
