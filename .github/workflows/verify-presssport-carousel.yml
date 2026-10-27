@@ -1,0 +1,24 @@
+name: Verify PressSport carousel JPEGs
+on:
+  workflow_dispatch:
+  workflow_call:
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install Pillow==11.3.0
+      - name: Verify public images (no publishing)
+        run: python scripts/verify_carousel_cloud.py
+      - name: Upload verification report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carousel-verification-report
+          path: carousel-verification-report.json
+          if-no-files-found: warn
