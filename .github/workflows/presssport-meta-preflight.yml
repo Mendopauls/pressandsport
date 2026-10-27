@@ -1,0 +1,26 @@
+name: PressSport Meta carousel preflight (no publication)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate draft manifest without Meta credentials
+        run: python scripts/meta_carousel_preflight.py
+      - name: Verify public carousel images
+        run: |
+          python -m pip install Pillow==11.3.0
+          python scripts/verify_carousel_cloud.py
+      - name: Upload image report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carousel-preflight-report
+          path: carousel-verification-report.json
+          if-no-files-found: warn
