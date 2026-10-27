@@ -39,5 +39,11 @@ for file_id, filename in FILES:
             raise RuntimeError(f"Unexpected dimensions for {filename}: {img.size}")
         img.verify()
     (out / filename).write_bytes(raw)
-    print(f"Verified {filename}: {len(raw)} bytes")
+    jpeg_name = filename.removesuffix(".png") + ".jpg"
+    with Image.open(io.BytesIO(raw)) as img:
+        img.convert("RGB").save(out / jpeg_name, format="JPEG", quality=94, subsampling=0, optimize=True)
+    with Image.open(out / jpeg_name) as jpg:
+        if jpg.format != "JPEG" or jpg.size != (1080, 1350):
+            raise RuntimeError(f"Invalid JPEG output: {jpeg_name}")
+    print(f"Verified {filename}: {len(raw)} bytes; JPEG ready: {jpeg_name}")
 print("All 7 files verified; Instagram publication is NOT performed.")
