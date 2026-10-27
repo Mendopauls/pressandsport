@@ -1,0 +1,25 @@
+name: PressSport publish approved Instagram carousel
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: 'Type PUBLISH_APPROVED to publish the approved manifest'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: presssport-instagram-publisher
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: ${{ inputs.confirmation == 'PUBLISH_APPROVED' }}
+    runs-on: ubuntu-24.04
+    environment: instagram-publishing
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate approval and publish via official Meta Graph API
+        env:
+          META_INSTAGRAM_ACCESS_TOKEN: ${{ secrets.META_INSTAGRAM_ACCESS_TOKEN }}
+          APPROVED: 'true'
+        run: python3 scripts/meta_publish_carousel.py
