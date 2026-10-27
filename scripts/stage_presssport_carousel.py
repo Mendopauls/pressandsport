@@ -4,10 +4,9 @@ Requires GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON GitHub Actions secret and Drive folde
 with the service-account email. Does not publish to Instagram.
 """
 import io
-import json
 import os
 from pathlib import Path
-from google.oauth2 import service_account
+from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from PIL import Image
@@ -22,13 +21,7 @@ FILES = [
     ("1gOepop_zRQD6xJMMlgXlYiK9Q7sddae9", "PressSport_Carosello_Slide_06_di_07.png"),
     ("1KLuYXBOLvlovIf5e0AkJBSzJBLTvX52n", "PressSport_Carosello_Slide_07_di_07.png"),
 ]
-secret = os.environ.get("GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON")
-if not secret:
-    raise SystemExit("Missing GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON GitHub Actions secret")
-creds = service_account.Credentials.from_service_account_info(
-    json.loads(secret),
-    scopes=["https://www.googleapis.com/auth/drive.readonly"],
-)
+creds, _ = default(scopes=["https://www.googleapis.com/auth/drive.readonly"])
 service = build("drive", "v3", credentials=creds, cache_discovery=False)
 out = Path("instagram-media/2026-10-28")
 out.mkdir(parents=True, exist_ok=True)
