@@ -1,17 +1,14 @@
 #!/usr/bin/env python3
-"""Download approved carousel images from a Google Drive folder via a service account.
-Requires GOOGLE_DRIVE_SERVICE_ACCOUNT_JSON GitHub Actions secret and Drive folder shared
-with the service-account email. Does not publish to Instagram.
+"""Stage seven explicitly approved Drive file IDs via keyless GitHub OIDC.
+No Instagram publishing. Access is restricted by Drive sharing and OIDC policy.
 """
 import io
-import os
 from pathlib import Path
 from google.auth import default
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from PIL import Image
 
-FOLDER_ID = "19T4NI6iiz8ykbQhieVJXQSW5DnVnos_7"
 FILES = [
     ("1MNO70XEgoYjFPCt_l9PYxVbUGzCEo2ip", "PressSport_Carosello_Slide_01_di_07.png"),
     ("1aU5TNZSSvGdFem_dkG33LsSOJTYwuU9Y", "PressSport_Carosello_Slide_02_di_07.png"),
@@ -26,11 +23,9 @@ service = build("drive", "v3", credentials=creds, cache_discovery=False)
 out = Path("instagram-media/2026-10-28")
 out.mkdir(parents=True, exist_ok=True)
 for file_id, filename in FILES:
-    metadata = service.files().get(fileId=file_id, fields="id,name,mimeType,parents").execute()
+    metadata = service.files().get(fileId=file_id, fields="id,name,mimeType").execute()
     if metadata.get("mimeType") != "image/png" or metadata.get("name") != filename:
         raise RuntimeError(f"Unexpected Drive metadata for {filename}: {metadata}")
-    if FOLDER_ID not in metadata.get("parents", []):
-        raise RuntimeError(f"Wrong Drive parent for {filename}")
     buffer = io.BytesIO()
     downloader = MediaIoBaseDownload(buffer, service.files().get_media(fileId=file_id))
     done = False
