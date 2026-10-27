@@ -40,6 +40,8 @@ def main():
         raise SystemExit("Unexpected account or image count")
     if not all(url.startswith("https://pressandsport.it/instagram-media/2026-10-28/") and url.endswith(".jpg") for url in urls):
         raise SystemExit("Unexpected image URL")
+    if not isinstance(data.get("caption"), str) or not data["caption"].strip():
+        raise SystemExit("Caption is empty: publication blocked")
     if data.get("status") != "approved" or os.environ.get("APPROVED") != "true":
         raise SystemExit("Not approved: publication blocked")
     token = os.environ.get("META_INSTAGRAM_ACCESS_TOKEN")
