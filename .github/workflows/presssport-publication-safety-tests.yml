@@ -10,6 +10,8 @@ on:
       - 'tests/test_publication_safety.py'
       - 'tests/test_publication_authorization.py'
       - 'tests/test_publication_ledger_state.py'
+      - 'tests/test_publication_reservation_schema.py'
+      - 'sql/presssport_publication_reservations.sql'
       - '.github/workflows/presssport-publication-safety-tests.yml'
   pull_request:
     paths:
@@ -21,6 +23,8 @@ on:
       - 'tests/test_publication_safety.py'
       - 'tests/test_publication_authorization.py'
       - 'tests/test_publication_ledger_state.py'
+      - 'tests/test_publication_reservation_schema.py'
+      - 'sql/presssport_publication_reservations.sql'
       - '.github/workflows/presssport-publication-safety-tests.yml'
   workflow_dispatch:
 permissions:
