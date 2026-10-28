@@ -1,0 +1,22 @@
+name: PressSport database connectivity (read only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  database:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify PostgreSQL access
+        env:
+          PGCONNECT_TIMEOUT: '10'
+          PGSSLMODE: require
+          PGDATABASE_URL: ${{ secrets.PRESSSPORT_DATABASE_URL }}
+        run: |
+          if [ -z "$PGDATABASE_URL" ]; then
+            echo "BLOCKED: database secret missing"
+            exit 1
+          fi
+          psql "$PGDATABASE_URL" -X -v ON_ERROR_STOP=1 -Atc "BEGIN READ ONLY; SELECT count(*) FROM presssport_internal.publication_reservations; ROLLBACK;"
+          echo "PUBLICATION: NOT PERFORMED"
