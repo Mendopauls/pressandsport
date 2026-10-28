@@ -1,0 +1,19 @@
+name: PressSport separate publication authorization check (read only)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  authorization:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check editorial readiness
+        run: python scripts/meta_publication_readiness.py
+      - name: Check ledger for duplicate entries
+        run: python scripts/check_publication_ledger.py
+      - name: Check separate publication authorization
+        run: python scripts/check_publication_authorization.py
