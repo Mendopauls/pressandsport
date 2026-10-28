@@ -51,3 +51,28 @@ def duplicate_blockers(manifest, entries):
     if any(entry.get("publication_key") == key and entry.get("status") in ACTIVE for entry in entries):
         return ["matching publication is reserved, publishing, published or uncertain"]
     return []
+
+# State changes are intentionally restrictive. A timed-out publish must
+# remain uncertain until a separate reconciliation procedure confirms outcome.
+TRANSITIONS = {
+    "reserved": {"publishing", "cancelled"},
+    "publishing": {"published", "uncertain"},
+    "uncertain": {"published", "failed"},
+    "published": set(),
+    "cancelled": set(),
+    "failed": set(),
+}
+
+def validate_transition(previous, next_status, *, reconciled=False):
+    """Return a list of blockers for a proposed state transition."""
+    problems = []
+    old = previous.get("status")
+    if old not in TRANSITIONS or next_status not in ALLOWED:
+        return ["unknown publication status"]
+    if next_status not in TRANSITIONS[old]:
+        problems.append("transition not permitted")
+    if old == "uncertain" and next_status == "failed" and not reconciled:
+        problems.append("uncertain result requires confirmed reconciliation")
+    if old == "publishing" and next_status == "published" and not previous.get("attempt_id"):
+        problems.append("publication attempt identifier missing")
+    return problems
