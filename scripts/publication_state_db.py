@@ -27,7 +27,7 @@ def transition_reservation(connection, *, publication_key, attempt_id,
         raise ValueError("reconciliation flag only valid for uncertain")
     if to_state != "published" and meta_media_id is not None:
         raise ValueError("Meta media id only accepted for published")
-    validate_transition(from_state, to_state)
+    problems = validate_transition({"status": from_state, "attempt_id": attempt_id}, to_state)\n    if problems:\n        raise ValueError("; ".join(problems))
     with connection.cursor() as cursor:
         cursor.execute(UPDATE_STATE, (to_state, meta_media_id,
                                       reconciliation_required, publication_key,
