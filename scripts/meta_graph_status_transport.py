@@ -14,7 +14,7 @@ def get_container_status(container_id, *, access_token, api_version="v24.0", ope
     descriptor = status_request(container_id)
     if not isinstance(access_token, str) or not access_token:
         raise ValueError("Meta token required")
-    if not re.fullmatch(r"v[0-9]+\\.[0-9]+", api_version):
+    if not re.fullmatch(r"v[0-9]+\.[0-9]+", api_version):
         raise ValueError("invalid Graph version")
     params = dict(descriptor["params"])
     params["access_token"] = access_token
