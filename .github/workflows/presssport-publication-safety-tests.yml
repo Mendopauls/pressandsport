@@ -7,6 +7,8 @@ on:
       - 'scripts/check_publication_authorization.py'
       - 'publishing/**'
       - 'tests/test_publication_safety.py'
+      - 'tests/test_publication_authorization.py'
+      - 'tests/test_publication_authorization.py'
       - '.github/workflows/presssport-publication-safety-tests.yml'
   pull_request:
     paths:
@@ -27,4 +29,4 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: python -m unittest discover -s tests -p 'test_publication_safety.py' -v
+      - run: python -m unittest discover -s tests -p 'test_publication_*.py' -v
