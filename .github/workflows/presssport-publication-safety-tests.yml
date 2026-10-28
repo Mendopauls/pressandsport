@@ -4,19 +4,23 @@ on:
     paths:
       - 'scripts/meta_publication_readiness.py'
       - 'scripts/check_publication_ledger.py'
+      - 'scripts/publication_ledger_state.py'
       - 'scripts/check_publication_authorization.py'
       - 'publishing/**'
       - 'tests/test_publication_safety.py'
       - 'tests/test_publication_authorization.py'
+      - 'tests/test_publication_ledger_state.py'
       - '.github/workflows/presssport-publication-safety-tests.yml'
   pull_request:
     paths:
       - 'scripts/meta_publication_readiness.py'
       - 'scripts/check_publication_ledger.py'
+      - 'scripts/publication_ledger_state.py'
       - 'scripts/check_publication_authorization.py'
       - 'publishing/**'
       - 'tests/test_publication_safety.py'
       - 'tests/test_publication_authorization.py'
+      - 'tests/test_publication_ledger_state.py'
       - '.github/workflows/presssport-publication-safety-tests.yml'
   workflow_dispatch:
 permissions:
