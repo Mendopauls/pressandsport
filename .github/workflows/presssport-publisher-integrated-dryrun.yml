@@ -1,0 +1,48 @@
+name: PressSport publisher integrated dry-run (no writes)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: presssport-publisher-dryrun
+  cancel-in-progress: false
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PGSSLMODE: require
+      PGCONNECT_TIMEOUT: '10'
+      PGDATABASE_URL: ${{ secrets.PRESSSPORT_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify approved carousel and local ledger
+        run: |
+          python scripts/meta_publication_readiness.py
+          python scripts/check_publication_ledger.py
+      - name: Verify real Supabase connection and reservation schema (read only)
+        run: |
+          if [ -z "$PGDATABASE_URL" ]; then
+            echo "BLOCKED: database secret missing"
+            exit 1
+          fi
+          psql "$PGDATABASE_URL" -X -v ON_ERROR_STOP=1 -Atc "BEGIN READ ONLY; SELECT count(*) FROM presssport_internal.publication_reservations; ROLLBACK;"
+      - name: Verify authorization gate remains closed
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          from scripts.check_publication_authorization import validate
+          manifest = Path("publishing/presssport-2026-10-28.json").read_bytes()
+          auth = json.loads(Path("publishing/presssport-2026-10-28-authorization.json").read_text())
+          blockers = validate(manifest, auth)
+          if not blockers:
+              raise SystemExit("BLOCKED: dry-run requires publication authorization to remain disabled")
+          if auth.get("publish_authorized") is not False:
+              raise SystemExit("BLOCKED: unexpected authorization state")
+          print("PASS: publisher authorization is disabled; no reservation or Meta write attempted")
+          print("PUBLICATION: NOT PERFORMED")
+          PY
