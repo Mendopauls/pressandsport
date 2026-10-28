@@ -1,0 +1,33 @@
+name: PressSport cloud configuration audit (no publishing)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check approved content without publishing
+        run: python scripts/meta_publication_readiness.py
+      - name: Check duplicate ledger without writing
+        run: python scripts/check_publication_ledger.py
+      - name: Report missing cloud configuration (never print secrets)
+        env:
+          META_PRESENT: ${{ secrets.META_INSTAGRAM_ACCESS_TOKEN != '' }}
+          DB_PRESENT: ${{ secrets.PRESSSPORT_DATABASE_URL != '' }}
+        run: |
+          python - <<'PY'
+          import os
+          meta = os.environ.get("META_PRESENT") == "true"
+          database = os.environ.get("DB_PRESENT") == "true"
+          print("Meta token configured:", "YES" if meta else "NO")
+          print("Private database URL configured:", "YES" if database else "NO")
+          print("This is a configuration audit only. No database or Meta requests.")
+          print("PUBLICATION: NOT PERFORMED")
+          if not (meta and database):
+              raise SystemExit("Cloud publisher prerequisites are incomplete")
+          PY
