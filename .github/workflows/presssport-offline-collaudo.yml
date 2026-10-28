@@ -1,0 +1,36 @@
+name: PressSport full offline regression collaudo
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/**'
+      - 'tests/test_publication_*.py'
+      - '.github/workflows/presssport-offline-collaudo.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Compile publisher Python modules
+        run: python -m compileall -q scripts
+      - name: Run all publication safety tests
+        run: python -m unittest discover -s tests -p 'test_publication_*.py' -v
+      - name: Verify editorial readiness
+        run: python scripts/meta_publication_readiness.py
+      - name: Verify local publication ledger
+        run: python scripts/check_publication_ledger.py
+      - name: Verify publication authorization remains disabled
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          auth = json.loads(Path('publishing/presssport-2026-10-28-authorization.json').read_text())
+          assert auth.get('publish_authorized') is False
+          print('PASS: no Instagram publication authorized')
+          PY
