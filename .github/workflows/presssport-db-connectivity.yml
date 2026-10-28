@@ -18,5 +18,5 @@ jobs:
             echo "BLOCKED: database secret missing"
             exit 1
           fi
-          psql "$PGDATABASE_URL" -X -v ON_ERROR_STOP=1 -Atc "BEGIN READ ONLY; SELECT CASE WHEN to_regclass('presssport_internal.publication_reservations') IS NOT NULL THEN 'PASS: private reservation table found' ELSE 'BLOCKED: private reservation table missing' END; ROLLBACK;"
+          psql "$PGDATABASE_URL" -X -v ON_ERROR_STOP=1 -Atc "BEGIN READ ONLY; SELECT count(*) FROM presssport_internal.publication_reservations; ROLLBACK;"
           echo "PUBLICATION: NOT PERFORMED"
