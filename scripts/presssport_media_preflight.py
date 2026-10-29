@@ -38,7 +38,7 @@ def verify_media(manifest_bytes, *, opener=urlopen, max_bytes=MAX_IMAGE_BYTES):
                 content = response.read(max_bytes + 1)
         except Exception as exc:
             raise RuntimeError(f"slide {index}: media unavailable or invalid") from exc
-        if not (4 <= len(content) <= max_bytes and content.startswith(b"\\xff\\xd8\\xff") and content.endswith(b"\\xff\\xd9")):
+        if not (4 <= len(content) <= max_bytes and content.startswith(bytes.fromhex("ffd8ff")) and content.endswith(bytes.fromhex("ffd9"))):
             raise ValueError(f"slide {index}: invalid or excessive JPEG payload")
         results.append({"slide": index, "reachable": True, "mime": "image/jpeg", "size_bytes": len(content)})
     return {"all_reachable": True, "image_count": len(results), "slides": results, "publication_performed": False}
