@@ -1,6 +1,12 @@
 name: PressSport cloud executor staging
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/presssport_*.py'
+      - 'publishing/**'
+      - '.github/workflows/presssport-cloud-executor-staging.yml'
 permissions:
   contents: read
 concurrency:
