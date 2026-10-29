@@ -87,4 +87,16 @@ class ReleaseTests(unittest.TestCase):
         with patch.dict("os.environ",{"PRESSSPORT_ENABLE_LIVE_PUBLISH":"NO"}):
             with self.assertRaisesRegex(PermissionError,"environment gate"):
                 main(["--publish-now","--confirm-account",ACCOUNT,"--confirm-manifest-sha256",DIGEST])
+    def test_manual_workflow_only_and_default_authorization_disabled(self):
+        from pathlib import Path
+        workflow = Path(".github/workflows/presssport-authorized-release.yml").read_text()
+        self.assertIn("workflow_dispatch:",workflow)
+        self.assertIn("default: false",workflow)
+        self.assertIn("if: inputs.publish_now == true",workflow)
+        self.assertIn("environment: instagram-production",workflow)
+        self.assertIn("cancel-in-progress: false",workflow)
+        self.assertNotIn("  push:",workflow)
+        self.assertNotIn("  schedule:",workflow)
+        authorization = json.loads(Path("publishing/presssport-2026-10-28-authorization.json").read_text())
+        self.assertIs(authorization["publish_authorized"],False)
 if __name__=="__main__": unittest.main()
