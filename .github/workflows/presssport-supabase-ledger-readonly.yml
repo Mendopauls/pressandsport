@@ -1,0 +1,35 @@
+name: PressSport Supabase ledger read-only verification
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: presssport-ledger-readonly
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PRESSSPORT_DATABASE_URL: ${{ secrets.PRESSSPORT_DATABASE_URL }}
+      PGSSLMODE: require
+      PGCONNECT_TIMEOUT: '10'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned PostgreSQL client
+        run: python -m pip install 'psycopg[binary]==3.2.10'
+      - name: Verify private Supabase ledger without writes
+        run: python scripts/presssport_database_readonly.py
+      - name: Confirm publishing remains disabled
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          auth = json.loads(Path("publishing/presssport-2026-10-28-authorization.json").read_text())
+          if auth.get("publish_authorized") is not False:
+              raise SystemExit("FAIL: read-only workflow requires publication disabled")
+          print("PASS: no Meta or database write requested")
+          PY
