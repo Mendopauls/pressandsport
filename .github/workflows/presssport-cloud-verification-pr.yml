@@ -1,0 +1,19 @@
+name: PressSport cloud verification PR checks
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/presssport-cloud-publisher-dryrun.yml'
+      - '.github/workflows/presssport-cloud-verification-pr.yml'
+      - 'tests/test_presssport_automatic_cloud_verification.py'
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest tests.test_presssport_automatic_cloud_verification -v

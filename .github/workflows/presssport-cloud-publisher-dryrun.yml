@@ -1,6 +1,15 @@
 name: PressSport cloud publisher integrated dry run
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/presssport_cloud_publisher.py'
+      - 'scripts/presssport_database_readonly.py'
+      - 'scripts/presssport_ledger_reconciliation_readonly.py'
+      - 'scripts/meta_identity_readonly.py'
+      - 'publishing/**'
+      - '.github/workflows/presssport-cloud-publisher-dryrun.yml'
 permissions:
   contents: read
 jobs:
