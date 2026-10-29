@@ -1,0 +1,21 @@
+name: PressSport production release safety tests
+on:
+  pull_request:
+    paths:
+      - 'scripts/presssport_live_release.py'
+      - 'tests/test_presssport_live_release.py'
+      - '.github/workflows/presssport-authorized-release.yml'
+      - '.github/workflows/presssport-release-safety-tests.yml'
+permissions:
+  contents: read
+jobs:
+  safety:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify all release gates with injected dependencies
+        run: python -m unittest tests.test_presssport_live_release -v
