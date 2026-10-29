@@ -19,10 +19,12 @@ def forbidden(*args, **kwargs):
     raise AssertionError("blocked operation must not be reached")
 
 def release(**kw):
-    return run_release(MANIFEST, VALID_AUTH, publish_now=True, confirm_account=ACCOUNT,
+    options = dict(publish_now=True, confirm_account=ACCOUNT,
         confirm_sha256=DIGEST, token="fake", database_url="postgresql://fake",
         db_connect=forbidden, now=NOW, media_check=forbidden,
-        identity_check=forbidden, meta_factory=forbidden, **kw)
+        identity_check=forbidden, meta_factory=forbidden)
+    options.update(kw)
+    return run_release(MANIFEST, VALID_AUTH, **options)
 
 class ReleaseTests(unittest.TestCase):
     def test_disabled_authorization_blocks_before_media_or_db(self):
