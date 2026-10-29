@@ -69,6 +69,33 @@ class OrchestratorTests(unittest.TestCase):
         self.assertEqual(meta.calls,1)
         self.assertEqual(db.row["state"],"uncertain")
         self.assertTrue(db.row["reconcile"])
+    def test_pending_containers_eventually_ready(self):
+        db=DB()
+        class PendingMeta(Meta):
+            def __init__(self, db):
+                super().__init__(db)
+                self.polls={}
+            def status(self, cid):
+                count=self.polls.get(cid,0)+1
+                self.polls[cid]=count
+                return {"id":cid,"status_code":"IN_PROGRESS" if count==1 else "FINISHED"}
+        meta=PendingMeta(db)
+        result=execute_once(db,MANIFEST,AUTH,meta,identity_verified=True,now=NOW,
+                            readiness_checks=2,readiness_interval=0,sleep=lambda _:None)
+        self.assertEqual(result["state"],"published")
+        self.assertEqual(len(meta.polls),8)
+        self.assertTrue(all(v==2 for v in meta.polls.values()))
+    def test_readiness_timeout_quarantines_without_publish_retry(self):
+        db=DB()
+        class PendingMeta(Meta):
+            def status(self,cid): return {"id":cid,"status_code":"IN_PROGRESS"}
+        meta=PendingMeta(db)
+        with self.assertRaises(PublicationUncertain):
+            execute_once(db,MANIFEST,AUTH,meta,identity_verified=True,now=NOW,
+                         readiness_checks=2,readiness_interval=0,sleep=lambda _:None)
+        self.assertEqual(meta.calls,7)
+        self.assertEqual(db.row["state"],"uncertain")
+        self.assertTrue(db.row["reconcile"])
     def test_disabled_authorization_blocks_before_db_or_meta(self):
         db=DB(); meta=Meta(db)
         with self.assertRaises(PermissionError):
