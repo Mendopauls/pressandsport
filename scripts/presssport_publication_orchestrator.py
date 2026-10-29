@@ -8,13 +8,14 @@ Any failure after entering publishing is quarantined as uncertain, never retried
 from scripts.prepublish_guard import prepare_reservation
 from scripts.publication_state_db import transition_reservation
 from scripts.meta_carousel_requests import child_requests, parent_request, publish_request
-from scripts.meta_container_status import require_all_ready, classify_container_status
+from scripts.meta_bounded_readiness import wait_until_ready
 
 class PublicationUncertain(RuntimeError):
     pass
 
 def execute_once(connection, manifest_bytes, authorization, meta, *,
-                 identity_verified=False, now=None):
+                 identity_verified=False, now=None, readiness_checks=6,
+                 readiness_interval=2, sleep=None):
     reservation = prepare_reservation(connection, manifest_bytes, authorization,
                                       identity_verified=identity_verified, now=now)
     key, attempt = reservation["publication_key"], reservation["attempt_id"]
@@ -24,11 +25,12 @@ def execute_once(connection, manifest_bytes, authorization, meta, *,
     connection.commit()  # Publishing durable before any external side effect.
     try:
         children = [meta.post(req) for req in child_requests(manifest_bytes)]
-        statuses = [meta.status(cid) for cid in children]
-        require_all_ready(children, statuses)
+        for cid in children:
+            wait_until_ready(meta, cid, max_checks=readiness_checks,
+                             interval_seconds=readiness_interval, sleep=sleep)
         parent = meta.post(parent_request(manifest_bytes, children))
-        if classify_container_status(parent, meta.status(parent)) != "ready":
-            raise RuntimeError("parent container not ready")
+        wait_until_ready(meta, parent, max_checks=readiness_checks,
+                         interval_seconds=readiness_interval, sleep=sleep)
         media_id = meta.post(publish_request(manifest_bytes, parent))
         if not isinstance(media_id, str) or not media_id.isdecimal():
             raise RuntimeError("invalid published media id")
