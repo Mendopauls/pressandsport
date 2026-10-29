@@ -1,0 +1,48 @@
+name: PressSport authorized Instagram release (manual only)
+on:
+  workflow_dispatch:
+    inputs:
+      publish_now:
+        description: 'I separately authorize this exact Instagram publication now'
+        type: boolean
+        required: true
+        default: false
+      confirm_account:
+        description: 'Exact Instagram account ID'
+        type: string
+        required: true
+      confirm_manifest_sha256:
+        description: 'SHA256 of the exactly approved manifest'
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: presssport-instagram-production
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: inputs.publish_now == true
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: instagram-production
+    env:
+      PRESSSPORT_ENABLE_LIVE_PUBLISH: 'YES'
+      PRESSSPORT_DATABASE_URL: ${{ secrets.PRESSSPORT_DATABASE_URL }}
+      META_INSTAGRAM_ACCESS_TOKEN: ${{ secrets.META_INSTAGRAM_ACCESS_TOKEN }}
+      CONFIRM_ACCOUNT: ${{ inputs.confirm_account }}
+      CONFIRM_MANIFEST_SHA256: ${{ inputs.confirm_manifest_sha256 }}
+      PGSSLMODE: require
+      PGCONNECT_TIMEOUT: '10'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned PostgreSQL dependency
+        run: python -m pip install 'psycopg[binary]==3.2.10'
+      - name: Confirm exact separate authorization and publish once
+        run: python -m scripts.presssport_live_release --publish-now --confirm-account "$CONFIRM_ACCOUNT" --confirm-manifest-sha256 "$CONFIRM_MANIFEST_SHA256"
