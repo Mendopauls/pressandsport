@@ -1,0 +1,34 @@
+name: PressSport verification packet
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'publishing/**'
+      - 'scripts/presssport_verification_packet.py'
+      - 'scripts/presssport_cloud_executor_staging.py'
+      - 'scripts/presssport_staging_boundary_check.py'
+      - '.github/workflows/presssport-verification-packet.yml'
+permissions:
+  contents: read
+jobs:
+  verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test verification packet
+        run: python -m unittest tests.test_presssport_verification_packet -v
+      - name: Generate packet
+        run: |
+          mkdir -p verification-output
+          python -m scripts.presssport_verification_packet > verification-output/presssport-verification.json
+      - name: Upload packet for operator review
+        uses: actions/upload-artifact@v4
+        with:
+          name: presssport-verification-packet
+          path: verification-output/presssport-verification.json
+          retention-days: 30
