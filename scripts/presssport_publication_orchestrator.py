@@ -16,6 +16,9 @@ class PublicationUncertain(RuntimeError):
 def execute_once(connection, manifest_bytes, authorization, meta, *,
                  identity_verified=False, now=None, readiness_checks=6,
                  readiness_interval=2, sleep=None):
+    # Scheduling is not implemented here: never publish a future-scheduled post now.
+    if authorization.get("action") != "publish_now":
+        raise PermissionError("only explicit publish_now is supported by this orchestrator")
     reservation = prepare_reservation(connection, manifest_bytes, authorization,
                                       identity_verified=identity_verified, now=now)
     key, attempt = reservation["publication_key"], reservation["attempt_id"]
