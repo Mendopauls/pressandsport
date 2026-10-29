@@ -103,6 +103,19 @@ class OrchestratorTests(unittest.TestCase):
                          meta,identity_verified=True,now=NOW)
         self.assertIsNone(db.row)
         self.assertEqual(meta.calls,0)
+    def test_future_schedule_never_publishes_immediately(self):
+        db=DB(); meta=Meta(db)
+        scheduled=dict(AUTH,action="schedule",scheduled_at="2026-10-29T12:00:00+00:00")
+        with self.assertRaises(PermissionError):
+            execute_once(db,MANIFEST,scheduled,meta,identity_verified=True,now=NOW)
+        self.assertIsNone(db.row)
+        self.assertEqual(meta.calls,0)
+    def test_missing_action_never_publishes(self):
+        db=DB(); meta=Meta(db)
+        with self.assertRaises(PermissionError):
+            execute_once(db,MANIFEST,dict(AUTH,action=None),meta,identity_verified=True,now=NOW)
+        self.assertIsNone(db.row)
+        self.assertEqual(meta.calls,0)
     def test_identity_required(self):
         db=DB(); meta=Meta(db)
         with self.assertRaises(PermissionError):
