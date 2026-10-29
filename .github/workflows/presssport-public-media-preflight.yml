@@ -1,0 +1,48 @@
+name: PressSport public carousel media validation
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'scripts/presssport_media_preflight.py'
+      - 'tests/test_presssport_media_preflight.py'
+      - '.github/workflows/presssport-public-media-preflight.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'publishing/**'
+      - 'scripts/presssport_media_preflight.py'
+      - '.github/workflows/presssport-public-media-preflight.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m unittest tests.test_presssport_media_preflight -v
+  public-media:
+    if: github.event_name != 'pull_request'
+    needs: offline-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check all approved JPEG URLs without publication
+        run: |
+          mkdir -p verification-output
+          python -m scripts.presssport_media_preflight > verification-output/public-media.json
+          cat verification-output/public-media.json
+      - name: Retain successful public media verification
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presssport-public-media-verification
+          path: verification-output/public-media.json
+          retention-days: 30
