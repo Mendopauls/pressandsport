@@ -6,6 +6,8 @@ class CloudExecutorStagingTests(unittest.TestCase):
         result=run()
         self.assertEqual(result["mode"],"staging_only")
         self.assertTrue(result["security_audit_passed"])
+        self.assertTrue(result["executor_boundary_blocked"])
+        self.assertEqual(result["external_calls"],0)
         self.assertFalse(result["live_execution_enabled"])
         self.assertFalse(result["published"])
         self.assertEqual(result["image_count"],7)
