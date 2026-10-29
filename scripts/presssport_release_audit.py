@@ -38,12 +38,15 @@ def audit():
         raise RuntimeError("publication gate unexpectedly open")
     # A fully wired production runner must be separately audited before release.
     runner = Path("scripts/presssport_cloud_publisher.py").exists()
+    # The current runner is explicitly dry-run-only. Presence never implies release readiness.
+    live_runner_audited = False
     return {"components_present": len(REQUIRED) - len(missing),
             "components_required": len(REQUIRED),
             "missing_components": missing,
             "production_runner_present": runner,
             "publication_authorized": False,
-            "release_ready": not missing and runner}
+            "runner_mode": "dry_run_only" if runner else "missing",
+            "release_ready": not missing and runner and live_runner_audited}
 
 def main():
     result = audit()

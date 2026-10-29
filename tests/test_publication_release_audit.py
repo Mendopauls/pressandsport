@@ -10,7 +10,9 @@ class ReleaseAuditTests(unittest.TestCase):
         self.assertFalse(audit()["publication_authorized"])
     def test_release_ready_requires_runner(self):
         result = audit()
-        self.assertEqual(result["release_ready"], result["production_runner_present"])
+        self.assertTrue(result["production_runner_present"])
+        self.assertEqual(result["runner_mode"], "dry_run_only")
+        self.assertFalse(result["release_ready"])
 
 if __name__ == "__main__":
     unittest.main()
