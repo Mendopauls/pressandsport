@@ -1,0 +1,27 @@
+name: PressSport integrated cloud preflight (no writes)
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: presssport-cloud-preflight
+  cancel-in-progress: false
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      PRESSSPORT_DATABASE_URL: ${{ secrets.PRESSSPORT_DATABASE_URL }}
+      PGSSLMODE: require
+      PGCONNECT_TIMEOUT: '10'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install pinned PostgreSQL client
+        run: python -m pip install 'psycopg[binary]==3.2.10'
+      - name: Check Supabase connection and publication authorization
+        run: python -m scripts.presssport_cloud_integration_preflight
+      - name: Run offline publisher integration tests
+        run: python -m unittest discover -s tests -p 'test_publication_*.py' -v
