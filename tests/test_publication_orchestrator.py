@@ -96,6 +96,31 @@ class OrchestratorTests(unittest.TestCase):
         self.assertEqual(meta.calls,7)
         self.assertEqual(db.row["state"],"uncertain")
         self.assertTrue(db.row["reconcile"])
+    def test_first_commit_failure_never_contacts_meta(self):
+        class FailingDB(DB):
+            def commit(self):
+                raise TimeoutError("commit outcome unknown")
+        db=FailingDB(); meta=Meta(db)
+        with self.assertRaises(PublicationUncertain):
+            execute_once(db,MANIFEST,AUTH,meta,identity_verified=True,now=NOW)
+        self.assertEqual(meta.calls,0)
+        self.assertIn("rollback",db.events)
+    def test_second_commit_failure_never_contacts_meta(self):
+        class FailingDB(DB):
+            def __init__(self):
+                super().__init__()
+                self.commit_count=0
+            def commit(self):
+                self.commit_count+=1
+                if self.commit_count==2:
+                    raise TimeoutError("publishing commit outcome unknown")
+                return super().commit()
+        db=FailingDB(); meta=Meta(db)
+        with self.assertRaises(PublicationUncertain):
+            execute_once(db,MANIFEST,AUTH,meta,identity_verified=True,now=NOW)
+        self.assertEqual(meta.calls,0)
+        self.assertEqual(db.row["state"],"reserved")
+        self.assertIn("rollback",db.events)
     def test_disabled_authorization_blocks_before_db_or_meta(self):
         db=DB(); meta=Meta(db)
         with self.assertRaises(PermissionError):

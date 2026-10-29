@@ -22,10 +22,18 @@ def execute_once(connection, manifest_bytes, authorization, meta, *,
     reservation = prepare_reservation(connection, manifest_bytes, authorization,
                                       identity_verified=identity_verified, now=now)
     key, attempt = reservation["publication_key"], reservation["attempt_id"]
-    connection.commit()  # Unique reservation durable before any external side effect.
-    transition_reservation(connection, publication_key=key, attempt_id=attempt,
-                           from_state="reserved", to_state="publishing")
-    connection.commit()  # Publishing durable before any external side effect.
+    # Never call Meta if either durable precondition cannot be confirmed.
+    # A failed COMMIT may have reached the server; do not retry the reservation.
+    try:
+        connection.commit()  # Unique reservation durable before any Meta side effect.
+        transition_reservation(connection, publication_key=key, attempt_id=attempt,
+                               from_state="reserved", to_state="publishing")
+        connection.commit()  # Publishing durable before any Meta side effect.
+    except Exception as exc:
+        connection.rollback()
+        raise PublicationUncertain(
+            "Pre-publication database state could not be confirmed; no Meta call attempted; manual ledger review required"
+        ) from exc
     try:
         children = [meta.post(req) for req in child_requests(manifest_bytes)]
         for cid in children:
