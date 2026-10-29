@@ -1,0 +1,19 @@
+name: PressSport cloud executor staging
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: presssport-executor-staging
+  cancel-in-progress: false
+jobs:
+  staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify safe staging gates
+        run: python -m scripts.presssport_cloud_executor_staging
