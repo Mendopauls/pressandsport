@@ -28,4 +28,20 @@ jobs:
           python-version: '3.11'
       - run: python -m pip install 'psycopg[binary]==3.2.10'
       - name: Verify cloud dry-run integration without publication
-        run: python -m scripts.presssport_cloud_publisher
+        run: |
+          mkdir -p verification-output
+          python -m scripts.presssport_cloud_publisher > verification-output/cloud-verification.json
+          cat verification-output/cloud-verification.json
+      - name: Record verification summary
+        if: success()
+        run: |
+          echo '## Press & Sport Cloud — read-only connectivity verified' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Meta account identity: verified; Supabase ledger: accessible.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No database writes or Meta POST calls. No publication performed.' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload read-only verification evidence
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: presssport-cloud-readonly-verification
+          path: verification-output/cloud-verification.json
+          retention-days: 30
