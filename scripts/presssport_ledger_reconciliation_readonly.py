@@ -6,6 +6,7 @@ may represent a process crash: flag for manual review, never retry POST.
 """
 import os
 from datetime import datetime, timezone
+from scripts.presssport_recovery_triage import recovery_report
 
 QUERY = """
 SELECT state, reconciliation_required, updated_at, publication_key
@@ -56,6 +57,8 @@ def main():
         # Avoid printing tokens, personal data or Meta IDs.
         print("REVIEW", entry["publication_key"], entry["state"],
               "stale=", entry["stale_publishing"])
+    for decision in recovery_report(result["review"]):
+        print("RECOVERY", decision["publication_key"], decision["action"], decision["reason"])
     print("READ ONLY: YES; META POST: NONE; AUTOMATIC RETRIES: NONE")
 
 if __name__ == "__main__":
