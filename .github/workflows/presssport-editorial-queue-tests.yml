@@ -1,0 +1,21 @@
+name: PressSport editorial queue safety checks
+on:
+  pull_request:
+    paths:
+      - 'scripts/presssport_editorial_queue.py'
+      - 'tests/test_presssport_editorial_queue.py'
+      - 'supabase/migrations/20261030_presssport_editorial_queue.sql'
+      - '.github/workflows/presssport-editorial-queue-tests.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate reusable editorial queue without credentials
+        run: python -m unittest tests.test_presssport_editorial_queue -v
