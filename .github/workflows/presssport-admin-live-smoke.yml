@@ -1,0 +1,29 @@
+name: PressSport deployed admin portal read-only smoke
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/presssport-admin-live-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify public login shell, configuration and locked API
+        env:
+          PORTAL_URL: https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-admin
+        run: |
+          set -euo pipefail
+          status=$(curl --connect-timeout 10 --max-time 30 -sS -o portal.html -w '%{http_code}' "$PORTAL_URL")
+          echo "Portal HTTP: $status"
+          test "$status" = "200"
+          grep -q 'Redazione e programmazione' portal.html
+          curl --connect-timeout 10 --max-time 30 -fsS "$PORTAL_URL?mode=config" |
+            python3 -c 'import json,sys; d=json.load(sys.stdin); assert d["admin_email"]=="info@paolosavio.eu"; assert d["supabase_url"].startswith("https://"); assert len(d["publishable_key"])>12; assert "service_role" not in json.dumps(d); print("Browser-safe configuration: PASS")'
+          status=$(curl --connect-timeout 10 --max-time 30 -sS -o deny.json -w '%{http_code}' -X POST "$PORTAL_URL?mode=api" -H 'Content-Type: application/json' -d '{"action":"list"}')
+          echo "Unauthenticated API HTTP: $status"
+          test "$status" = "401"
+          grep -q 'Sessione autenticata necessaria' deny.json
+          echo 'PASS: login page reachable; untrusted API access denied; no publishing'

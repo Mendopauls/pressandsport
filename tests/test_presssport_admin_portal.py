@@ -1,4 +1,5 @@
 import re
+import json
 import subprocess
 import unittest
 from pathlib import Path
@@ -9,6 +10,12 @@ EDGE=(ROOT/"supabase/functions/presssport-admin/index.ts").read_text()
 HTML=(ROOT/"supabase/functions/presssport-admin/portal.html").read_text()
 
 class AdminPortalContract(unittest.TestCase):
+    def test_html_is_embedded_into_edge_bundle(self):
+        embedded = re.search(r'^const PORTAL_HTML = (".*");$', EDGE, re.M)
+        self.assertIsNotNone(embedded)
+        self.assertEqual(json.loads(embedded.group(1)), HTML)
+        self.assertNotIn("Deno.readTextFile", EDGE)
+
     def test_server_side_email_allowlist(self):
         self.assertIn("info@paolosavio.eu",SQL)
         self.assertIn("info@paolosavio.eu",EDGE)
