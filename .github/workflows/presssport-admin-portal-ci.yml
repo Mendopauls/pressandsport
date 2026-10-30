@@ -1,0 +1,26 @@
+name: PressSport admin portal security and syntax
+on:
+  pull_request:
+    paths:
+      - 'supabase/functions/presssport-admin/**'
+      - 'supabase/migrations/20261030_presssport_admin_portal.sql'
+      - 'tests/test_presssport_admin_portal.py'
+      - '.github/workflows/presssport-admin-portal-ci.yml'
+permissions:
+  contents: read
+jobs:
+  portal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate admin authorization and JS syntax
+        run: python -m unittest tests.test_presssport_admin_portal -v
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.5.6
+      - name: Typecheck Edge Function
+        run: deno check supabase/functions/presssport-admin/index.ts
