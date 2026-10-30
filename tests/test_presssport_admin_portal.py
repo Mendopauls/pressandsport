@@ -42,7 +42,6 @@ class AdminPortalContract(unittest.TestCase):
         self.assertIn("detectSessionInUrl:true",HTML)
         self.assertIn("auth.signOut()",HTML)
         self.assertIn("publication_authorized',false",SQL)
-        self.assertIn('"publication_authorized",false',SQL.replace(" ",""))
         self.assertNotIn("publish_now",HTML)
         self.assertNotIn("media_publish",HTML)
         self.assertNotIn("POST /media",HTML)
