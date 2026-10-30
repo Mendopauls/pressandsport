@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
     paths:
+      - 'publishing/**'
       - 'scripts/presssport_media_preflight.py'
       - 'tests/test_presssport_media_preflight.py'
       - '.github/workflows/presssport-public-media-preflight.yml'
