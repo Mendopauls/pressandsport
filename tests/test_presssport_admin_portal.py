@@ -11,7 +11,7 @@ HTML=(ROOT/"supabase/functions/presssport-admin/portal.html").read_text()
 
 class AdminPortalContract(unittest.TestCase):
     def test_html_is_embedded_into_edge_bundle(self):
-        embedded = re.search(r'const PORTAL_HTML = ("(?:\\\\.|[^"\\\\])*");', EDGE)
+        embedded = re.search(r'^const PORTAL_HTML = (".*");$', EDGE, re.M)
         self.assertIsNotNone(embedded)
         self.assertEqual(json.loads(embedded.group(1)), HTML)
         self.assertNotIn("Deno.readTextFile", EDGE)
