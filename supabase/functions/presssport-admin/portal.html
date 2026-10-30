@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><title>Press & Sport Cloud — Redazione</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,Arial,sans-serif;background:#0c1321;color:#e9eff7}
+*{box-sizing:border-box}body{margin:0}main{max-width:1060px;margin:auto;padding:28px 18px 70px}
+h1{font-size:clamp(1.65rem,4vw,2.6rem);margin:8px 0}h2{margin:0 0 14px;font-size:1.18rem}
+p{line-height:1.6;color:#aebbd0}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;letter-spacing:.18em;color:#e7b778;font-size:.77rem}
+.card{border:1px solid #304059;background:#172338;border-radius:18px;padding:24px;margin-top:20px;box-shadow:0 12px 30px #0002}
+label{display:block;font-weight:600;font-size:.85rem;color:#cdd8e7;margin:15px 0 6px}
+input,textarea{width:100%;background:#0f1b2d;color:#fff;border:1px solid #41516a;border-radius:10px;padding:13px;font:inherit;outline-offset:3px}
+textarea{min-height:126px;resize:vertical}button{background:#d8a96a;border:0;border-radius:10px;color:#101723;padding:11px 17px;font:inherit;font-weight:700;cursor:pointer;margin:12px 8px 0 0}
+button.secondary{background:#2b3a51;color:#e8f0ff}button:disabled{opacity:.5;cursor:not-allowed}
+small{color:#9caac0}#notice{min-height:22px;margin-top:15px;color:#e7b778;white-space:pre-wrap}
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.item{padding:16px 0;border-top:1px solid #314158}.item h3{margin:0 0 6px;font-size:1rem;overflow-wrap:anywhere}
+.meta{font-size:.82rem;color:#afbed1;overflow-wrap:anywhere}.pill{display:inline-block;background:#32445e;border-radius:18px;padding:4px 10px;font-size:.75rem;font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}@media(max-width:720px){.two{grid-template-columns:1fr}}
+.hide{display:none!important}.warning{border-left:3px solid #d8a96a;padding-left:12px}.actions{display:flex;flex-wrap:wrap}
+</style>
+</head>
+<body><main>
+<div class="top"><div class="brand">PRESS & SPORT · CLOUD</div><button id="logout" class="secondary hide" type="button">Esci</button></div>
+<h1>Redazione e programmazione</h1>
+<p>Gestione riservata dei contenuti Instagram. La pianificazione editoriale <strong>non pubblica automaticamente</strong>: ogni pubblicazione richiede un'autorizzazione separata.</p>
+<section id="login" class="card">
+<h2>Accesso amministratore</h2>
+<p>Riceverai un link di accesso all'indirizzo autorizzato. Non servono password condivise.</p>
+<label for="email">Indirizzo amministratore</label>
+<input id="email" type="email" value="info@paolosavio.eu" readonly autocomplete="username">
+<button id="sendlink" type="button">Invia link di accesso</button>
+<p><small>Il link deve reindirizzare a questa pagina; il dominio va autorizzato nelle impostazioni Supabase Auth.</small></p>
+</section>
+<section id="console" class="hide">
+<div class="card toolbar"><div><h2>Area riservata</h2><small id="identity"></small></div>
+<button id="refresh" class="secondary">Aggiorna</button></div>
+<div class="two">
+<section class="card"><h2>Nuova bozza</h2>
+<label for="postKey">Codice contenuto (slug univoco)</label>
+<input id="postKey" placeholder="presssport-post-2026-11-03" maxlength="80">
+<label for="caption">Caption Instagram</label><textarea id="caption" maxlength="2200" placeholder="Scrivi la caption..."></textarea>
+<label for="urls">URL pubblici delle immagini JPEG (da 2 a 10; uno per riga)</label>
+<textarea id="urls" placeholder="https://pressandsport.it/.../slide-01.jpg"></textarea>
+<button id="create" type="button">Salva bozza</button>
+</section>
+<section class="card"><h2>Contenuti in lavorazione</h2><div id="items"><p>Nessuna bozza caricata.</p></div></section>
+</div>
+<section class="card warning"><h2>Pubblicazione protetta</h2><p>Le bozze e le date pianificate sono soltanto editoriali. Il pulsante di pubblicazione non è disponibile in questa versione; il carosello già pubblicato non viene riproposto.</p></section>
+</section>
+<div id="notice" role="status" aria-live="polite"></div>
+</main>
+<script nonce="__CSP_NONCE__" type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.95.0";
+const $=id=>document.getElementById(id), notice=$("notice");
+const endpoint=location.pathname;
+const show=(msg,bad=false)=>{notice.textContent=msg;notice.style.color=bad?"#ffb4af":"#e7b778"};
+let client=null, session=null, busy=false;
+const config=await fetch(endpoint+"?mode=config",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("Configurazione non disponibile");return r.json()});
+client=createClient(config.supabase_url,config.publishable_key,{auth:{storageKey:"presssport-admin-session",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+function toggle(yes){$("login").classList.toggle("hide",yes);$("console").classList.toggle("hide",!yes);$("logout").classList.toggle("hide",!yes)}
+async function api(action,payload={},post_key=null){
+  const {data:{session:s}}=await client.auth.getSession();
+  if(!s?.access_token)throw Error("Sessione scaduta: accedi di nuovo");
+  const result=await fetch(endpoint+"?mode=api",{method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+s.access_token},
+    body:JSON.stringify({action,payload,post_key}),cache:"no-store"});
+  const data=await result.json();
+  if(!result.ok)throw Error(data.error||"Errore del servizio");
+  return data;
+}
+const states={draft:"Bozza",ready_for_review:"Da approvare",approved:"Approvato",planned:"Pianificato",cancelled:"Annullato"};
+function btn(label,callback){const e=document.createElement("button");e.className="secondary";e.textContent=label;e.addEventListener("click",async()=>{if(busy)return;busy=true;e.disabled=true;try{await callback();await load()}catch(err){show(err.message,true)}finally{busy=false;e.disabled=false}});return e}
+function render(items){
+  const root=$("items");root.replaceChildren();
+  if(!items?.length){const e=document.createElement("p");e.textContent="Nessuna bozza in coda.";root.append(e);return}
+  for(const p of items){
+    const wrap=document.createElement("div");wrap.className="item";
+    const title=document.createElement("h3");title.textContent=p.post_key;wrap.append(title);
+    const badge=document.createElement("span");badge.className="pill";badge.textContent=states[p.editorial_state]||p.editorial_state;wrap.append(badge);
+    const desc=document.createElement("p");desc.textContent=p.caption;wrap.append(desc);
+    const meta=document.createElement("div");meta.className="meta";meta.textContent=p.image_urls.length+" immagini · "+(p.planned_at?new Date(p.planned_at).toLocaleString("it-IT"):"nessuna data");wrap.append(meta);
+    const actions=document.createElement("div");actions.className="actions";
+    const trans=async to_state=>api("transition",{from_state:p.editorial_state,to_state},p.post_key);
+    if(p.editorial_state==="draft")actions.append(btn("Invia in revisione",()=>trans("ready_for_review")));
+    if(p.editorial_state==="ready_for_review"){
+      actions.append(btn("Approva contenuto",()=>trans("approved")));
+      actions.append(btn("Ritorna a bozza",()=>trans("draft")));
+    }
+    if(p.editorial_state==="approved")actions.append(btn("Pianifica",async()=>{
+      const value=prompt("Data e ora italiana (formato AAAA-MM-GG HH:MM). È solo una pianificazione editoriale.");
+      if(value===null)return;
+      const match=/^(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2})$/.exec(value);
+      if(!match)throw Error("Formato data non valido");
+      const dt=new Date(match[1]+"-"+match[2]+"-"+match[3]+"T"+match[4]+":"+match[5]+":00");
+      if(!Number.isFinite(dt.getTime()))throw Error("Data non valida");
+      return api("transition",{from_state:"approved",to_state:"planned",planned_at:dt.toISOString()},p.post_key);
+    }));
+    if(p.editorial_state==="planned")actions.append(btn("Rimuovi data",()=>trans("approved")));
+    if(!["cancelled"].includes(p.editorial_state))actions.append(btn("Annulla contenuto",()=>{
+      if(!confirm("Annullare questa bozza?"))return;
+      return trans("cancelled");
+    }));
+    wrap.append(actions);root.append(wrap);
+  }
+}
+async function load(){
+  const d=await api("list");$("identity").textContent=d.admin_email;
+  render(d.items);toggle(true);show("Area editoriale aggiornata. La pubblicazione è disattivata.");
+}
+async function check(){
+  const {data:{session:s}}=await client.auth.getSession();session=s;
+  if(!s){toggle(false);return}
+  try{await load()}catch(e){toggle(false);show(e.message,true)}
+}
+$("sendlink").addEventListener("click",async()=>{
+  $("sendlink").disabled=true;try{
+    const {error}=await client.auth.signInWithOtp({
+      email:config.admin_email,
+      options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:true}
+    });
+    if(error)throw error;
+    show("Link richiesto. Controlla la casella "+config.admin_email+".");
+  }catch(e){show(e.message,true)}finally{$("sendlink").disabled=false}
+});
+$("logout").addEventListener("click",async()=>{await client.auth.signOut();session=null;toggle(false);show("Accesso terminato.")});
+$("refresh").addEventListener("click",()=>load().catch(e=>show(e.message,true)));
+$("create").addEventListener("click",async()=>{
+  $("create").disabled=true;try{
+    const post_key=$("postKey").value.trim(),caption=$("caption").value.trim(),
+          image_urls=$("urls").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+    await api("create",{post_key,caption,image_urls,instagram_account_id:"17841425937268080"});
+    $("postKey").value="";$("caption").value="";$("urls").value="";
+    await load();show("Bozza salvata. Pubblicazione NON autorizzata.");
+  }catch(e){show(e.message,true)}finally{$("create").disabled=false}
+});
+client.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT")toggle(false)});
+await check();
+</script></body></html>
