@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer">
+<title>Press &amp; Sport — Console editoriale V2</title>
+<style>
+:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#f4f4f4}
+main{max-width:1080px;margin:auto;padding:28px 18px}
+h1{font-size:clamp(1.7rem,4vw,2.5rem);margin:0}.muted{color:#bbb}
+section{background:#202020;border:1px solid #414141;padding:20px;margin:18px 0;border-radius:12px}
+input,button{font:inherit;padding:10px;border-radius:8px}input{background:#151515;color:#fff;border:1px solid #777;max-width:100%;box-sizing:border-box}
+button{background:#c43a3a;color:#fff;border:0;cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}
+.form{display:flex;gap:10px;flex-wrap:wrap;align-items:end}.form label{display:grid;gap:5px;flex:1;min-width:180px}
+table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:10px;border-bottom:1px solid #444;overflow-wrap:anywhere}
+.scroll{overflow-x:auto}.error{color:#ffa7a7}.ok{color:#9ae2b4}
+</style></head><body><main>
+<h1>PRESS &amp; SPORT <span class="muted">Cloud V2</span></h1>
+<p class="muted">Console editoriale · Accesso riservato · Sola consultazione</p>
+<section><h2>Accedi</h2>
+<p class="muted">Usa un account Supabase Auth già abilitato per Press &amp; Sport. Le autorizzazioni sono controllate dal server.</p>
+<form id="login" class="form"><label>Email<input type="email" id="email" autocomplete="username" required></label>
+<label>Password<input type="password" id="password" autocomplete="current-password" required></label>
+<button id="login-button" type="submit">Accedi</button></form>
+<p id="message" role="status" aria-live="polite"></p>
+<button type="button" id="logout" hidden>Esci</button></section>
+<section id="queue-panel" hidden><h2>Coda editoriale</h2>
+<button id="refresh" type="button">Aggiorna</button>
+<div class="scroll"><table><thead><tr><th>ID</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data pianificata</th></tr></thead>
+<tbody id="queue"></tbody></table></div></section>
+<p class="muted">Nessun controllo di pubblicazione è disponibile in questa versione.</p>
+</main><script src="./editorial-v2-config.js"></script><script type="module" src="./editorial-v2.js"></script></body></html>

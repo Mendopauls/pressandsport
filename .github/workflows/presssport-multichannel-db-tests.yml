@@ -1,0 +1,42 @@
+name: PressSport multichannel database isolation tests
+on:
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261031_presssport_multichannel_queue.sql'
+      - 'tests/sql/presssport_multichannel_queue_smoke.sql'
+      - '.github/workflows/presssport-multichannel-db-tests.yml'
+permissions:
+  contents: read
+jobs:
+  postgres-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: testonly
+          POSTGRES_DB: presssport_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d presssport_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PGHOST: localhost
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: testonly
+      PGDATABASE: presssport_test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Supabase-compatible roles
+        run: psql -v ON_ERROR_STOP=1 -c "CREATE ROLE anon NOLOGIN; CREATE ROLE authenticated NOLOGIN;"
+      - name: Apply isolated migration
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261031_presssport_multichannel_queue.sql
+      - name: Re-apply migration for idempotency
+        run: psql -v ON_ERROR_STOP=1 -f supabase/migrations/20261031_presssport_multichannel_queue.sql
+      - name: Verify editorial transitions and isolation
+        run: psql -v ON_ERROR_STOP=1 -f tests/sql/presssport_multichannel_queue_smoke.sql

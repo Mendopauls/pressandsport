@@ -1,0 +1,38 @@
+name: PressSport multichannel v2 offline safety
+on:
+  pull_request:
+    paths:
+      - 'scripts/presssport_multichannel_*.py'
+      - 'tests/test_presssport_multichannel_*.py'
+      - 'tests/test_presssport_editorial_console_cli.py'
+      - 'scripts/presssport_editorial_console_cli.py'
+      - 'scripts/presssport_editorial_dashboard.py'
+      - 'tests/test_presssport_editorial_dashboard.py'
+      - 'scripts/presssport_editorial_authenticated_api.py scripts/presssport_ollama_worker.py'
+      - 'tests/test_presssport_editorial_authenticated_api.py'
+      - 'admin/editorial-v2.html'
+      - 'admin/editorial-v2.js'
+      - 'admin/editorial-v2-config.example.js'
+      - 'tests/test_presssport_editorial_frontend.py'
+      - 'scripts/presssport_ollama_worker.py'
+      - 'scripts/INSTALLA_AVVIO_PRESSSPORT_OLLAMA.ps1'
+      - 'tests/test_presssport_ollama_worker.py'
+      - 'supabase/migrations/20261031_presssport_multichannel_queue.sql'
+      - '.github/workflows/presssport-multichannel-v2-tests.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Validate syntax
+        run: python -m compileall -q scripts/presssport_multichannel_manifest.py scripts/presssport_multichannel_queue.py scripts/presssport_editorial_console_cli.py scripts/presssport_editorial_dashboard.py scripts/presssport_editorial_authenticated_api.py
+      - name: Check frontend JavaScript syntax
+        run: node --check admin/editorial-v2.js
+      - name: Validate manifest tests
+        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue tests.test_presssport_editorial_console_cli tests.test_presssport_editorial_dashboard tests.test_presssport_editorial_authenticated_api tests.test_presssport_editorial_frontend tests.test_presssport_ollama_worker -v

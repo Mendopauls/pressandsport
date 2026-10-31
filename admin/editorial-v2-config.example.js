@@ -1,0 +1,1 @@
+// Example only. Copy as editorial-v2-config.js during trusted deployment.\n// Do not commit secrets: publishable keys are public, database credentials are NOT.\nwindow.PRESSSPORT_PUBLIC_CONFIG = {\n  supabaseUrl: "https://YOUR-PRESSSPORT-PROJECT.supabase.co",\n  publishableKey: "YOUR_PUBLIC_SUPABASE_KEY",\n  apiPath: "/api/editorial/v2/queue"\n};\n
