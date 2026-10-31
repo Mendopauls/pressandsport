@@ -14,7 +14,6 @@ $lines=@(
 '@echo off',
 'setlocal',
 'cd /d "'+$dir+'"',
-'for /f "usebackq tokens=*" %%s in (`powershell.exe -NoProfile -Command "[Environment]::GetEnvironmentVariable(''PRESSSPORT_WORKER_SECRET'',''User'')"`) do set "PRESSSPORT_WORKER_SECRET=%%s"',
 '"'+$python+'" "'+$worker+'" --model "'+$Model+'" >> "'+(Join-Path $root "cloud-bridge.log")+'" 2>&1'
 )
 # Do not persist the secret in this .cmd file.
