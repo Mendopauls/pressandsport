@@ -37,6 +37,13 @@ def main():
     p.add_argument("--once",action="store_true")
     args=p.parse_args()
     secret=os.getenv("PRESSSPORT_WORKER_SECRET","")
+    if not secret and os.name=="nt":
+        import winreg
+        try:
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER,"Environment") as k:
+                secret=winreg.QueryValueEx(k,"PRESSSPORT_WORKER_SECRET")[0]
+        except OSError:
+            pass
     if len(secret)<32:raise SystemExit("Missing PRESSSPORT_WORKER_SECRET (minimum 32 characters)")
     while True:
         try:
