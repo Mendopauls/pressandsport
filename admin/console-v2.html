@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Press &amp; Sport Cloud V2 — Coda editoriale</title>
+<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Inserisci l'email autorizzata per ricevere il link di accesso. Il link deve reindirizzare a questa pagina.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="email" required><button type="submit">Invia link</button></label></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
+const endpoint="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-v2-queue";
+const status=document.getElementById("status"),rows=document.getElementById("rows");
+let client;
+function note(s){status.textContent=s}
+async function refresh(){
+ if(!client)return;
+ const {data:{session}}=await client.auth.getSession();
+ if(!session){note("Accedi usando il link ricevuto via email.");return}
+ try{
+  const r=await fetch(endpoint+"?mode=queue",{headers:{"Authorization":"Bearer "+session.access_token},cache:"no-store"});
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const d=await r.json();rows.replaceChildren();
+  for(const item of d.items||[]){const tr=document.createElement("tr");
+   for(const field of ["post_key","channel","kind","state","planned_at"]){const td=document.createElement("td");td.textContent=String(item[field]??"—");tr.append(td)}rows.append(tr)}
+  note("Accesso verificato. Contenuti in coda: "+(d.items||[]).length+". Nessuna pubblicazione attiva.");
+ }catch(e){note("Coda non disponibile: "+e.message)}
+}
+try{
+ const r=await fetch(endpoint+"?mode=config",{cache:"no-store"});
+ if(!r.ok)throw Error("Configurazione: HTTP "+r.status);
+ const config=await r.json();
+ client=createClient(config.supabase_url,config.publishable_key,{auth:{storageKey:"presssport-v2-web-session",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+ note("Configurazione caricata. Accedi con l'email amministrativa.");
+ await refresh();
+}catch(e){note("Errore di configurazione: "+e.message)}
+document.getElementById("login").addEventListener("submit",async e=>{
+ e.preventDefault();if(!client)return;
+ try{const {error}=await client.auth.signInWithOtp({email:document.getElementById("email").value,options:{emailRedirectTo:location.origin+location.pathname,shouldCreateUser:false}});
+ if(error)throw error;note("Link richiesto. Controlla la casella email autorizzata.");}catch(error){note("Invio link fallito: "+error.message)}
+});
+document.getElementById("reload").addEventListener("click",refresh);
+document.getElementById("logout").addEventListener("click",async()=>{if(client)await client.auth.signOut();rows.replaceChildren();note("Sessione chiusa")});
+</script></body></html>
