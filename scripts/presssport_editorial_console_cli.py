@@ -21,6 +21,7 @@ def parser():
     for key in ("post-key", "from-state", "to-state"):
         move.add_argument("--" + key, required=True)
     move.add_argument("--planned-at", help="ISO-8601 timezone-aware timestamp")
+    move.add_argument("--operator", required=True, help="Operator identity (must be externally authenticated)")
     return p
 
 def run(args, connection):
@@ -32,10 +33,12 @@ def run(args, connection):
                             account_id=args.account_id, caption=args.caption,
                             image_urls=urls)
     if args.command == "transition":
+        if args.to_state == "approved":
+            raise PermissionError("Approval disabled in CLI until verified operator authentication is implemented")
         planned_at = datetime.fromisoformat(args.planned_at) if args.planned_at else None
         return move_state(connection, post_key=args.post_key,
                           from_state=args.from_state, to_state=args.to_state,
-                          operator="Paolo Savio", planned_at=planned_at)
+                          operator=args.operator, planned_at=planned_at)
     raise ValueError("unknown command")
 
 def main(argv=None):
