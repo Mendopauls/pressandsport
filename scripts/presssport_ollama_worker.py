@@ -34,7 +34,7 @@ def discover(db, root):
     folder.mkdir(exist_ok=True)
     for item in sorted(folder.glob("*.json")):
         try:
-            job=json.loads(item.read_text(encoding="utf-8"))
+            job=json.loads(item.read_text(encoding="utf-8-sig"))
             key=job.get("job_key")
             if not isinstance(key,str) or not key or len(key)>100 or not all(c.isalnum() or c in "-_" for c in key):
                 continue
@@ -64,7 +64,7 @@ def process_one(db,root,endpoint,model):
     key,path,attempts=row
     db.execute("UPDATE jobs SET state='running',attempts=attempts+1,updated=? WHERE job_key=?",(utcnow(),key));db.commit()
     try:
-        job=json.loads(Path(path).read_text(encoding="utf-8"))
+        job=json.loads(Path(path).read_text(encoding="utf-8-sig"))
         if job.get("job_key")!=key:raise ValueError("Job identifier mismatch")
         text=generate(job["brief"],endpoint,model)
         output=root/"drafts";output.mkdir(exist_ok=True)
