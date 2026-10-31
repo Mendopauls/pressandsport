@@ -6,6 +6,8 @@ on:
       - 'tests/test_presssport_multichannel_*.py'
       - 'tests/test_presssport_editorial_console_cli.py'
       - 'scripts/presssport_editorial_console_cli.py'
+      - 'scripts/presssport_editorial_dashboard.py'
+      - 'tests/test_presssport_editorial_dashboard.py'
       - 'supabase/migrations/20261031_presssport_multichannel_queue.sql'
       - '.github/workflows/presssport-multichannel-v2-tests.yml'
 permissions:
@@ -20,6 +22,6 @@ jobs:
         with:
           python-version: '3.11'
       - name: Validate syntax
-        run: python -m compileall -q scripts/presssport_multichannel_manifest.py scripts/presssport_multichannel_queue.py scripts/presssport_editorial_console_cli.py
+        run: python -m compileall -q scripts/presssport_multichannel_manifest.py scripts/presssport_multichannel_queue.py scripts/presssport_editorial_console_cli.py scripts/presssport_editorial_dashboard.py
       - name: Validate manifest tests
-        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue tests.test_presssport_editorial_console_cli -v
+        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue tests.test_presssport_editorial_console_cli tests.test_presssport_editorial_dashboard -v
