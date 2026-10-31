@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from scripts.presssport_editorial_authenticated_api import handle_request, is_operator
+from scripts.presssport_editorial_authenticated_api import handle_request, is_operator, verified_email
 
 class Cursor:
     def __init__(self, allowed=True): self.allowed=allowed; self.executed=[]
@@ -23,6 +23,24 @@ class AuthTests(unittest.TestCase):
                 db_connect=lambda:conn,supabase_url="https://project.supabase.co",
                 publishable_key="public",verifier=lambda *a: email)
         return code,payload,conn,listing
+
+    def test_verifier_rejects_non_https(self):
+        self.assertIsNone(verified_email("abc", "http://project.supabase.co",
+                                         "public", opener=lambda *a, **k: None))
+
+    def test_verifier_uses_auth_identity_only(self):
+        import io
+        class Reply(io.BytesIO):
+            status = 200
+            def __enter__(self): return self
+            def __exit__(self,*a): return False
+        def opener(request, timeout):
+            self.assertEqual(timeout, 8)
+            self.assertEqual(request.get_header("Authorization"), "Bearer token")
+            return Reply(b'{"email":" ADMIN@Example.test ","user_metadata":{"role":"admin"}}')
+        self.assertEqual(
+            verified_email("token", "https://project.supabase.co", "public", opener),
+            "admin@example.test")
 
     def test_anonymous_rejected(self):
         code,_,conn,_=self.check(auth=None)
