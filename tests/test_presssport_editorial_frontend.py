@@ -10,7 +10,7 @@ class ConsoleFrontendTests(unittest.TestCase):
         self.assertIn("Coda editoriale", html)
         self.assertIn("api/editorial/v2/queue", js)
         self.assertNotIn("service_role", html + js)
-        self.assertNotIn("localStorage", js.split("// memory only;")[1])
+        self.assertNotIn("localStorage.", js)
         self.assertNotIn("/publish", js)
 
     def test_config_never_contains_private_credentials(self):
