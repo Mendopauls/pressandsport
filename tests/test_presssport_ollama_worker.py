@@ -24,6 +24,13 @@ class WorkerTests(unittest.TestCase):
             self.assertIn("draft_for_review",(root/"drafts"/"post-01.json").read_text(encoding="utf-8"))
             discover(db,root)
             self.assertEqual(db.execute("SELECT state FROM jobs").fetchone()[0],"complete")
+    def test_powershell_utf8_bom_job(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d);db=connect(root)
+            inbox=root/"inbox";inbox.mkdir()
+            (inbox/"powershell.json").write_text('{"job_key":"presssport-test-001","brief":"Una bozza sportiva"}',encoding="utf-8-sig")
+            discover(db,root)
+            self.assertEqual(db.execute("SELECT job_key FROM jobs").fetchone()[0],"presssport-test-001")
     def test_failed_work_is_preserved(self):
         with tempfile.TemporaryDirectory() as d:
             root=Path(d);db=connect(root);(root/"inbox").mkdir()
