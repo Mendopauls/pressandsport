@@ -8,12 +8,15 @@ on:
       - 'scripts/presssport_editorial_console_cli.py'
       - 'scripts/presssport_editorial_dashboard.py'
       - 'tests/test_presssport_editorial_dashboard.py'
-      - 'scripts/presssport_editorial_authenticated_api.py'
+      - 'scripts/presssport_editorial_authenticated_api.py scripts/presssport_ollama_worker.py'
       - 'tests/test_presssport_editorial_authenticated_api.py'
       - 'admin/editorial-v2.html'
       - 'admin/editorial-v2.js'
       - 'admin/editorial-v2-config.example.js'
       - 'tests/test_presssport_editorial_frontend.py'
+      - 'scripts/presssport_ollama_worker.py'
+      - 'scripts/INSTALLA_AVVIO_PRESSSPORT_OLLAMA.ps1'
+      - 'tests/test_presssport_ollama_worker.py'
       - 'supabase/migrations/20261031_presssport_multichannel_queue.sql'
       - '.github/workflows/presssport-multichannel-v2-tests.yml'
 permissions:
@@ -32,4 +35,4 @@ jobs:
       - name: Check frontend JavaScript syntax
         run: node --check admin/editorial-v2.js
       - name: Validate manifest tests
-        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue tests.test_presssport_editorial_console_cli tests.test_presssport_editorial_dashboard tests.test_presssport_editorial_authenticated_api tests.test_presssport_editorial_frontend -v
+        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue tests.test_presssport_editorial_console_cli tests.test_presssport_editorial_dashboard tests.test_presssport_editorial_authenticated_api tests.test_presssport_editorial_frontend tests.test_presssport_ollama_worker -v
