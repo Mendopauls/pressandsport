@@ -37,12 +37,15 @@ def discover(db, root):
             job=json.loads(item.read_text(encoding="utf-8-sig"))
             key=job.get("job_key")
             if not isinstance(key,str) or not key or len(key)>100 or not all(c.isalnum() or c in "-_" for c in key):
+                print(f"IMPORT SKIPPED {item.name}: invalid job_key", flush=True)
                 continue
             if not isinstance(job.get("brief"),str) or not 1<=len(job["brief"])<=12000:
+                print(f"IMPORT SKIPPED {item.name}: invalid brief", flush=True)
                 continue
             db.execute("INSERT OR IGNORE INTO jobs(job_key,source_file,state,updated) VALUES(?,?,'pending',?)",
                        (key,str(item.resolve()),utcnow()))
-        except (OSError,ValueError,TypeError):
+        except (OSError, ValueError, TypeError, sqlite3.Error) as exc:
+            print(f"IMPORT ERROR {item.name}: {type(exc).__name__}: {exc}", flush=True)
             continue
     db.commit()
 
