@@ -20,4 +20,4 @@ jobs:
       - name: Validate syntax
         run: python -m compileall -q scripts/presssport_multichannel_manifest.py scripts/presssport_multichannel_queue.py
       - name: Validate manifest tests
-        run: python -m unittest tests.test_presssport_multichannel_manifest -v
+        run: python -m unittest tests.test_presssport_multichannel_manifest tests.test_presssport_multichannel_queue -v
