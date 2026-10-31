@@ -46,7 +46,7 @@ CREATE INDEX IF NOT EXISTS multichannel_queue_due_idx
   WHERE editorial_state='planned';
 ALTER TABLE presssport_internal.multichannel_queue ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON presssport_internal.multichannel_queue FROM PUBLIC, anon, authenticated;
-REVOKE ALL ON SCHEMA presssport_internal FROM PUBLIC, anon, authenticated;
+-- Preserve existing schema grants used by the legacy production pipeline.
 
 CREATE OR REPLACE FUNCTION presssport_internal.guard_multichannel_queue()
 RETURNS trigger LANGUAGE plpgsql SECURITY INVOKER
