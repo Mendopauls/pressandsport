@@ -32,4 +32,4 @@ jobs:
           assert scripts and any(s.strip() for s in scripts), "No inline JavaScript found"
           Path("/tmp/presssport-console.js").write_text("\n".join(scripts))
           PY
-          node --check /tmp/presssport-console.js
+          node --check --input-type=module < /tmp/presssport-console.js
