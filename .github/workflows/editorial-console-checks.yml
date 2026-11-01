@@ -1,14 +1,17 @@
 name: PressSport editorial console checks
 on:
+  workflow_dispatch:
   push:
     paths:
       - 'admin/console-v2-review.html'
       - 'tests/test_presssport_editorial_review_console.py'
+      - 'supabase/migrations/*editorial*.sql'
       - '.github/workflows/editorial-console-checks.yml'
   pull_request:
     paths:
       - 'admin/console-v2-review.html'
       - 'tests/test_presssport_editorial_review_console.py'
+      - 'supabase/migrations/*editorial*.sql'
       - '.github/workflows/editorial-console-checks.yml'
 permissions:
   contents: read
