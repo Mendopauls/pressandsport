@@ -69,7 +69,7 @@ async function loadJobs(){
       for(const key of required)if(typeof content[key]!=="string"||!content[key].trim())issues.push("Campo assente: "+key);
       if(typeof content.instagram_caption==="string" && (content.instagram_caption.length<450||content.instagram_caption.length>750))issues.push("Instagram: "+content.instagram_caption.length+" caratteri (richiesti 450–750)");
       if(typeof content.linkedin_caption==="string" && (content.linkedin_caption.length<650||content.linkedin_caption.length>1000))issues.push("LinkedIn: "+content.linkedin_caption.length+" caratteri (richiesti 650–1000)");
-      if(/verificat[ioe]|tutte le fotografie.*presenti/i.test(String(content.fact_checks||"")))issues.push("Dichiarazioni di verifica non supportate: controllo umano necessario");
+      if(/(?:sono|risultano|già)\s+(?:stati?\s+)?verificat[ieo]|tutte le fotografie.*(?:sono|risultano).*presenti/i.test(String(content.fact_checks||"")))issues.push("Dichiarazioni di verifica non supportate: controllo umano necessario");
       if(item.asset_state!=="verified")issues.push(item.asset_file_id?"Fotografia associata ma non ancora verificata":"Fotografia non selezionata né verificata per questo contenuto");
     } catch {issues.push("Bozza non in JSON valido: revisione strutturale necessaria");}
     const verdict=document.createElement("strong");verdict.textContent=issues.length?"REVISIONE NECESSARIA":"Controlli strutturali superati";
