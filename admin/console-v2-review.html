@@ -55,9 +55,9 @@ async function loadJobs(){
    if(item.draft_text){
     const checks=document.createElement("div");
     checks.style.cssText="padding:10px;background:#151515;border:1px solid #555;border-radius:6px;margin:8px 0";
-    let issues=[];
+    let issues=[]; let parsed=null;
     try {
-      const content=JSON.parse(item.draft_text.trim());
+      const content=JSON.parse(item.draft_text.trim()); parsed=content;
       const required=["instagram_caption","linkedin_caption","visual_brief","fact_checks","suggested_alt_text"];
       for(const key of required)if(typeof content[key]!=="string"||!content[key].trim())issues.push("Campo assente: "+key);
       if(typeof content.instagram_caption==="string" && (content.instagram_caption.length<450||content.instagram_caption.length>750))issues.push("Instagram: "+content.instagram_caption.length+" caratteri (richiesti 450–750)");
@@ -68,7 +68,20 @@ async function loadJobs(){
     const verdict=document.createElement("strong");verdict.textContent=issues.length?"REVISIONE NECESSARIA":"Controlli strutturali superati";
     checks.append(verdict);
     const ul=document.createElement("ul");for(const issue of issues){const li=document.createElement("li");li.textContent=issue;ul.append(li)}checks.append(ul);article.append(checks);
-    const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre);
+    if(parsed){
+      const parts=[["Caption Instagram",parsed.instagram_caption],["Caption LinkedIn",parsed.linkedin_caption],["Indicazioni visual",parsed.visual_brief],["Verifiche dichiarate da Ollama (NON confermate)",parsed.fact_checks],["Testo alternativo proposto",parsed.suggested_alt_text]];
+      for(const [heading,value] of parts){
+        const section=document.createElement("section");section.style.cssText="background:#161616;border:1px solid #444;padding:12px;margin:10px 0;border-radius:8px";
+        const h=document.createElement("h4");h.textContent=heading;section.append(h);
+        const body=document.createElement("p");body.style.whiteSpace="pre-wrap";body.textContent=typeof value==="string"?value:"Campo mancante";section.append(body);
+        article.append(section);
+      }
+    } else {
+      const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre);
+    }
+    const asset=document.createElement("div");asset.style.cssText="border:1px dashed #666;padding:12px;border-radius:8px";
+    const assetText=document.createElement("p");assetText.textContent="Fotografia: da selezionare e verificare. Gli asset archivio Drive non sono automaticamente associati al post.";asset.append(assetText);
+    const drive=document.createElement("a");drive.href="https://drive.google.com/drive/folders/1xOCEw44MoatNs0uSWwsfIMB7xLtZnVS-";drive.target="_blank";drive.rel="noopener noreferrer";drive.textContent="Consulta archivio Press & Sport";asset.append(drive);article.append(asset);
     const notice=document.createElement("p");
     notice.style.cssText="color:#ffcf8b;border-left:3px solid #c89b5d;padding:8px 12px";
     notice.textContent="Bozza AI non verificata: controllare fatti, lunghezza dei testi e immagini originali. Le dichiarazioni di verifica prodotte da Ollama non attestano controlli reali. Nessuna pubblicazione autorizzata.";
