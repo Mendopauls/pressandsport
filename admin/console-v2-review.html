@@ -75,6 +75,21 @@ async function loadJobs(){
     checks.append(verdict);
     const ul=document.createElement("ul");for(const issue of issues){const li=document.createElement("li");li.textContent=issue;ul.append(li)}checks.append(ul);article.append(checks);
     if(parsed){
+      const editor=document.createElement("details");editor.style.cssText="margin:10px 0;padding:12px;border:1px solid #555;border-radius:8px";
+      const toggle=document.createElement("summary");toggle.textContent="Modifica caption e salva nuova revisione (senza pubblicare)";editor.append(toggle);
+      const fields={};
+      for(const [field,label] of [["instagram_caption","Instagram"],["linkedin_caption","LinkedIn"]]){
+        const t=document.createElement("textarea");t.value=String(parsed[field]||"");t.rows=5;t.maxLength=5000;t.style.cssText="width:100%;box-sizing:border-box;background:#111;color:white;border:1px solid #777;border-radius:6px;padding:8px";
+        const l=document.createElement("label");l.textContent="Caption "+label;l.style.display="block";l.append(t);editor.append(l);fields[field]=t;
+      }
+      const save=document.createElement("button");save.type="button";save.textContent="Salva nuova versione";editor.append(save);
+      save.addEventListener("click",async()=>{
+        try{const content={...parsed,instagram_caption:fields.instagram_caption.value.trim(),linkedin_caption:fields.linkedin_caption.value.trim()};
+          if(!content.instagram_caption||!content.linkedin_caption)throw Error("Caption mancanti");
+          const response=await callJobs("revision",{job_key:item.job_key,content});
+          note("Revisione "+response.revision+" salvata, senza approvazione o pubblicazione.");await loadJobs();
+        }catch(e){note("Revisione non salvata: "+e.message)}
+      });article.append(editor);
       const parts=[["Caption Instagram",parsed.instagram_caption],["Caption LinkedIn",parsed.linkedin_caption],["Indicazioni visual",parsed.visual_brief],["Verifiche dichiarate da Ollama (NON confermate)",parsed.fact_checks],["Testo alternativo proposto",parsed.suggested_alt_text]];
       for(const [heading,value] of parts){
         const section=document.createElement("section");section.style.cssText="background:#161616;border:1px solid #444;padding:12px;margin:10px 0;border-radius:8px";
