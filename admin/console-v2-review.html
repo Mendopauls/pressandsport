@@ -76,6 +76,16 @@ async function loadJobs(){
     checks.append(verdict);
     const ul=document.createElement("ul");for(const issue of issues){const li=document.createElement("li");li.textContent=issue;ul.append(li)}checks.append(ul);article.append(checks);
     if(parsed){
+      const checklist=document.createElement("div");checklist.style.cssText="padding:10px;margin:10px 0;border:1px solid #555;border-radius:8px";
+      const checks=[
+        ["Caption Instagram nei limiti",typeof parsed.instagram_caption==="string"&&parsed.instagram_caption.length>=450&&parsed.instagram_caption.length<=750],
+        ["Caption LinkedIn nei limiti",typeof parsed.linkedin_caption==="string"&&parsed.linkedin_caption.length>=650&&parsed.linkedin_caption.length<=1000],
+        ["Fotografia associata",Boolean(item.asset_file_id)],
+        ["Fotografia verificata",item.asset_state==="verified"],
+        ["Approvazione umana",false]
+      ];
+      const header=document.createElement("strong");header.textContent="Checklist pre-pubblicazione · nessuna azione di pubblicazione";checklist.append(header);
+      const ul=document.createElement("ul");for(const [label,ok] of checks){const li=document.createElement("li");li.textContent=(ok?"✓ ":"○ ")+label;ul.append(li)}checklist.append(ul);article.append(checklist);
       const editor=document.createElement("details");editor.style.cssText="margin:10px 0;padding:12px;border:1px solid #555;border-radius:8px";
       const toggle=document.createElement("summary");toggle.textContent="Modifica caption e salva nuova revisione (senza pubblicare)";editor.append(toggle);
       const fields={};
