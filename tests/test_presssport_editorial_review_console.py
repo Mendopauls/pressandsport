@@ -50,6 +50,13 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("Fotografia già associata: nessuna modifica necessaria.",html)
         self.assertIn("item.asset_file_id===assetId.value.trim()",html)
 
+    def test_asset_reassignment_migration_preserves_verification(self):
+        migration=(ROOT/"supabase"/"migrations"/"20261101_editorial_asset_idempotency.sql").read_text(encoding="utf-8")
+        self.assertIn("drive_file_id=excluded.drive_file_id", migration)
+        self.assertIn("then presssport_internal.editorial_assets.verification_state", migration)
+        self.assertIn("else 'pending' end", migration)
+        self.assertIn("then presssport_internal.editorial_assets.verified_at else null end", migration)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
