@@ -1,10 +1,12 @@
 <!doctype html>
 <html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Press &amp; Sport Cloud V2 — Coda editoriale</title>
-<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Accedi con l'account amministratore già creato in Supabase. Non è necessario ricevere un link email.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label> <label>Password <input id="password" type="password" autocomplete="current-password" required></label> <button type="submit">Accedi</button></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
+<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Accedi con l'account amministratore già creato in Supabase. Non è necessario ricevere un link email.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label> <label>Password <input id="password" type="password" autocomplete="current-password" required></label> <button type="submit">Accedi</button></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><section><h2>Bozze Ollama</h2><p>Crea un incarico editoriale per Ollama. Il risultato sarà una bozza da revisionare: nessun invio social.</p><form id="new-job"><label>Codice univoco <input id="job-key" required pattern="[A-Za-z0-9_-]{3,100}" placeholder="post-2026-11-01"></label><p><label>Brief <textarea id="job-brief" required maxlength="12000" rows="5" style="width:100%;background:#151515;color:#fff;border:1px solid #666;border-radius:7px;padding:10px;box-sizing:border-box"></textarea></label></p><button type="submit">Invia a Ollama</button></form><p><button id="refresh-jobs" type="button">Aggiorna bozze</button></p><div id="jobs"></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
 const endpoint="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-v2-queue";
 const status=document.getElementById("status"),rows=document.getElementById("rows");
+const jobsApi="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-ollama-sync";
+const jobsArea=document.getElementById("jobs");
 let client;
 function note(s){status.textContent=s}
 async function refresh(){
@@ -18,6 +20,7 @@ async function refresh(){
   for(const item of d.items||[]){const tr=document.createElement("tr");
    for(const field of ["post_key","channel","kind","state","planned_at"]){const td=document.createElement("td");td.textContent=String(item[field]??"—");tr.append(td)}rows.append(tr)}
   note("Accesso verificato. Contenuti in coda: "+(d.items||[]).length+". Nessuna pubblicazione attiva.");
+  await loadJobs();
  }catch(e){note("Coda non disponibile: "+e.message)}
 }
 try{
@@ -28,6 +31,34 @@ try{
  note("Configurazione caricata. Accedi con l'email amministrativa.");
  await refresh();
 }catch(e){note("Errore di configurazione: "+e.message)}
+async function callJobs(mode,payload={}){
+  const {data:{session}}=await client.auth.getSession();
+  if(!session)throw Error("Accesso richiesto");
+  const response=await fetch(jobsApi+"?mode="+mode,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify(payload),cache:"no-store"});
+  const data=await response.json();if(!response.ok)throw Error(data.error||("HTTP "+response.status));return data;
+}
+async function loadJobs(){
+ try{
+  const data=await callJobs("list");jobsArea.replaceChildren();
+  if(!data.items?.length){jobsArea.textContent="Nessuna bozza Ollama";return}
+  for(const item of data.items){
+   const article=document.createElement("article");article.style.cssText="padding:14px 0;border-bottom:1px solid #444";
+   const title=document.createElement("h3");title.textContent=item.job_key+" · "+item.state;article.append(title);
+   const brief=document.createElement("p");brief.textContent=item.brief;article.append(brief);
+   if(item.draft_text){const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre)}
+   jobsArea.append(article);
+  }
+ }catch(e){jobsArea.textContent="Errore caricamento bozze: "+e.message}
+}
+document.getElementById("refresh-jobs").addEventListener("click",loadJobs);
+document.getElementById("new-job").addEventListener("submit",async e=>{
+ e.preventDefault();
+ try{
+  const job_key=document.getElementById("job-key").value.trim();
+  const brief=document.getElementById("job-brief").value.trim();
+  await callJobs("enqueue",{job_key,brief});note("Incarico inserito in coda: "+job_key);await loadJobs();
+ }catch(err){note("Impossibile creare incarico: "+err.message)}
+});
 document.getElementById("login").addEventListener("submit",async e=>{
  e.preventDefault();if(!client)return;
  try{const {error}=await client.auth.signInWithPassword({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value});
