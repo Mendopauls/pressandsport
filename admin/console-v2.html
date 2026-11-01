@@ -57,7 +57,7 @@ async function loadJobs(){
     checks.style.cssText="padding:10px;background:#151515;border:1px solid #555;border-radius:6px;margin:8px 0";
     let issues=[];
     try {
-      const content=JSON.parse(item.draft_text.replace(/^\`\`\`(?:json)?\\s*/i,"").replace(/\\s*\`\`\`$/,""));
+      const content=JSON.parse(item.draft_text.replace(/^\`\`\`(?:json)?\s*/i,"").replace(/\s*\`\`\`$/,""));
       const required=["instagram_caption","linkedin_caption","visual_brief","fact_checks","suggested_alt_text"];
       for(const key of required)if(typeof content[key]!=="string"||!content[key].trim())issues.push("Campo assente: "+key);
       if(typeof content.instagram_caption==="string" && (content.instagram_caption.length<450||content.instagram_caption.length>750))issues.push("Instagram: "+content.instagram_caption.length+" caratteri (richiesti 450–750)");
