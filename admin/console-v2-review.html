@@ -101,7 +101,8 @@ async function loadJobs(){
       const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre);
     }
     const asset=document.createElement("div");asset.style.cssText="border:1px dashed #666;padding:12px;border-radius:8px";
-    const assetText=document.createElement("p");assetText.textContent="Fotografia: da selezionare e verificare. Gli asset archivio Drive non sono automaticamente associati al post.";asset.append(assetText);
+    const assetText=document.createElement("p");assetText.textContent=item.asset_file_id?"Fotografia associata. Verifica dei diritti e pertinenza non ancora completata.":"Fotografia: da selezionare e verificare. Gli asset archivio Drive non sono automaticamente associati al post.";asset.append(assetText);
+    if(item.asset_file_id){const chosen=document.createElement("a");chosen.href="https://drive.google.com/file/d/"+encodeURIComponent(item.asset_file_id)+"/view";chosen.target="_blank";chosen.rel="noopener noreferrer";chosen.textContent="Apri fotografia associata: "+(item.asset_name||"file Drive");asset.append(chosen);asset.append(document.createTextNode(" · Autore dichiarato: Paolo Savio · Diritti dei soggetti da verificare"));}
     const drive=document.createElement("a");drive.href="https://drive.google.com/drive/folders/1xOCEw44MoatNs0uSWwsfIMB7xLtZnVS-";drive.target="_blank";drive.rel="noopener noreferrer";drive.textContent="Consulta archivio Press & Sport";asset.append(drive);article.append(asset);
     const notice=document.createElement("p");
     notice.style.cssText="color:#ffcf8b;border-left:3px solid #c89b5d;padding:8px 12px";
