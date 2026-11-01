@@ -24,6 +24,12 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertNotIn('callJobs("approve"',html)
         self.assertIn("Checklist pre-pubblicazione",html)
 
+    def test_revision_editor_enforces_caption_lengths(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn("Lunghezza caption fuori dai limiti editoriali",html)
+        self.assertIn("content.instagram_caption.length<450",html)
+        self.assertIn("content.linkedin_caption.length<650",html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
