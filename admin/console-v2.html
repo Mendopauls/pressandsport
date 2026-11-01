@@ -7,18 +7,24 @@ const endpoint="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport
 const status=document.getElementById("status"),rows=document.getElementById("rows");
 const jobsApi="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-ollama-sync";
 const jobsArea=document.getElementById("jobs");
+const loginForm=document.getElementById("login");
+const queuePanel=document.getElementById("rows");
+function showLogin(message="Sessione scaduta o non attiva. Accedi con email e password."){
+ loginForm.hidden=false;queuePanel.replaceChildren();jobsArea.textContent="Accedi per visualizzare le bozze Ollama.";note(message);
+}
 let client;
 function note(s){status.textContent=s}
 async function refresh(){
  if(!client)return;
  const {data:{session}}=await client.auth.getSession();
- if(!session){note("Accedi con email e password.");return}
+ if(!session){showLogin();return}
  try{
   const r=await fetch(endpoint+"?mode=queue",{headers:{"Authorization":"Bearer "+session.access_token},cache:"no-store"});
   if(!r.ok)throw Error("HTTP "+r.status);
   const d=await r.json();rows.replaceChildren();
   for(const item of d.items||[]){const tr=document.createElement("tr");
    for(const field of ["post_key","channel","kind","state","planned_at"]){const td=document.createElement("td");td.textContent=String(item[field]??"—");tr.append(td)}rows.append(tr)}
+  loginForm.hidden=true;
   note("Accesso verificato. Contenuti in coda: "+(d.items||[]).length+". Nessuna pubblicazione attiva.");
   await loadJobs();
  }catch(e){note("Coda non disponibile: "+e.message)}
@@ -30,10 +36,11 @@ try{
  client=createClient(config.supabase_url,config.publishable_key,{auth:{storageKey:"presssport-v2-web-session",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
  note("Configurazione caricata. Accedi con l'email amministrativa.");
  await refresh();
+ client.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT")showLogin();});
 }catch(e){note("Errore di configurazione: "+e.message)}
 async function callJobs(mode,payload={}){
   const {data:{session}}=await client.auth.getSession();
-  if(!session)throw Error("Accesso richiesto");
+  if(!session){showLogin();throw Error("Sessione non attiva: effettua l’accesso.");}
   const response=await fetch(jobsApi+"?mode="+mode,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify(payload),cache:"no-store"});
   const data=await response.json();if(!response.ok)throw Error(data.error||("HTTP "+response.status));return data;
 }
@@ -48,7 +55,7 @@ async function loadJobs(){
    if(item.draft_text){const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre)}
    jobsArea.append(article);
   }
- }catch(e){jobsArea.textContent="Errore caricamento bozze: "+e.message}
+ }catch(e){if(!String(e.message).includes("Sessione non attiva"))jobsArea.textContent="Errore caricamento bozze: "+e.message}
 }
 document.getElementById("refresh-jobs").addEventListener("click",loadJobs);
 document.getElementById("new-job").addEventListener("submit",async e=>{
