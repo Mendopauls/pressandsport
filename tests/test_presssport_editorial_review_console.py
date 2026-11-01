@@ -32,12 +32,11 @@ class EditorialConsoleTests(unittest.TestCase):
 
     def test_revision_api_and_migration_enforce_limits(self):
         migration_path=ROOT/"supabase"/"migrations"/"20261101_editorial_revision_caption_validation.sql"
-        # This migration lives on the feature branch; main may not contain it until review.
-        if migration_path.exists():
-            migration=migration_path.read_text(encoding="utf-8")
-            self.assertIn("char_length(ig) not between 450 and 750",migration)
-            self.assertIn("char_length(li) not between 650 and 1000",migration)
-            self.assertIn("grant execute",migration)
+        self.assertTrue(migration_path.exists(), "Migration missing from checked-out branch")
+        migration=migration_path.read_text(encoding="utf-8")
+        self.assertIn("char_length(ig) not between 450 and 750",migration)
+        self.assertIn("char_length(li) not between 650 and 1000",migration)
+        self.assertIn("grant execute",migration)
 
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
