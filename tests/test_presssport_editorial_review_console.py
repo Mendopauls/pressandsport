@@ -65,6 +65,13 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("publication_enabled=false",migration)
         self.assertNotIn('callJobs("switch-project"',html)
 
+    def test_other_projects_hide_legacy_editor(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn('id="project-selector"',html)
+        self.assertIn('draftPanel.hidden=!legacy',html)
+        self.assertIn('jobsArea.hidden=!legacy',html)
+        self.assertIn('Spazio in preparazione',html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
