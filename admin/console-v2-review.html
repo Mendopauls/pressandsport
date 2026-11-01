@@ -52,6 +52,7 @@ async function loadJobs(){
    const article=document.createElement("article");article.style.cssText="padding:14px 0;border-bottom:1px solid #444";
    const title=document.createElement("h3");title.textContent=item.job_key+" · "+item.state;article.append(title);
    const brief=document.createElement("p");brief.textContent=item.brief;article.append(brief);
+   const gate=document.createElement("p");gate.textContent=item.asset_state==="verified"?"Verifica fotografia completata; approvazione editoriale ancora necessaria.":"Verifica fotografica incompleta: contenuto non pubblicabile.";gate.style.fontWeight="bold";article.append(gate);
    const history=document.createElement("p");history.textContent="Revisioni conservate: "+(item.revisions??0)+" · Visualizzata: "+(item.latest_editorial_content?"ultima revisione editoriale":"bozza AI originale")+" · Fotografia: "+(item.asset_name||"non associata")+" · Verifica: "+(item.asset_state||"mancante");article.append(history);
    const attach=document.createElement("form");attach.style.cssText="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0";
    const assetId=document.createElement("input");assetId.placeholder="ID file Google Drive";assetId.required=true;assetId.pattern="[A-Za-z0-9_-]{15,100}";assetId.value=item.asset_file_id||"";
