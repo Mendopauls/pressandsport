@@ -37,6 +37,8 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("char_length(ig) not between 450 and 750",migration)
         self.assertIn("char_length(li) not between 650 and 1000",migration)
         self.assertIn("grant execute",migration)
+        for name in ("visual_brief","fact_checks","suggested_alt_text"):
+            self.assertIn(name,migration)
 
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
