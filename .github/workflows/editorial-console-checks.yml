@@ -28,7 +28,7 @@ jobs:
           from pathlib import Path
           import re
           html=Path("admin/console-v2-review.html").read_text()
-          scripts=re.findall(r'<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>', html)
-          Path("/tmp/presssport-console.js").write_text("\\n".join(scripts))
+          scripts=re.findall(r'<script(?:\s[^>]*)?>([\s\S]*?)</script>', html)
+          Path("/tmp/presssport-console.js").write_text("\n".join(scripts))
           PY
           node --check /tmp/presssport-console.js
