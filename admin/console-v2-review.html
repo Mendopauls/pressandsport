@@ -52,7 +52,7 @@ async function loadJobs(){
    const article=document.createElement("article");article.style.cssText="padding:14px 0;border-bottom:1px solid #444";
    const title=document.createElement("h3");title.textContent=item.job_key+" · "+item.state;article.append(title);
    const brief=document.createElement("p");brief.textContent=item.brief;article.append(brief);
-   const history=document.createElement("p");history.textContent="Revisioni conservate: "+(item.revisions??0)+" · Fotografia: "+(item.asset_name||"non associata")+" · Verifica: "+(item.asset_state||"mancante");article.append(history);
+   const history=document.createElement("p");history.textContent="Revisioni conservate: "+(item.revisions??0)+" · Visualizzata: "+(item.latest_editorial_content?"ultima revisione editoriale":"bozza AI originale")+" · Fotografia: "+(item.asset_name||"non associata")+" · Verifica: "+(item.asset_state||"mancante");article.append(history);
    const attach=document.createElement("form");attach.style.cssText="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0";
    const assetId=document.createElement("input");assetId.placeholder="ID file Google Drive";assetId.required=true;assetId.pattern="[A-Za-z0-9_-]{15,100}";assetId.value=item.asset_file_id||"";
    const assetName=document.createElement("input");assetName.placeholder="Nome file immagine";assetName.required=true;assetName.maxLength=220;assetName.value=item.asset_name||"";
@@ -63,7 +63,7 @@ async function loadJobs(){
     checks.style.cssText="padding:10px;background:#151515;border:1px solid #555;border-radius:6px;margin:8px 0";
     let issues=[]; let parsed=null;
     try {
-      const content=JSON.parse(item.draft_text.trim()); parsed=content;
+      const content= item.latest_editorial_content || JSON.parse(item.draft_text.trim()); parsed=content;
       const required=["instagram_caption","linkedin_caption","visual_brief","fact_checks","suggested_alt_text"];
       for(const key of required)if(typeof content[key]!=="string"||!content[key].trim())issues.push("Campo assente: "+key);
       if(typeof content.instagram_caption==="string" && (content.instagram_caption.length<450||content.instagram_caption.length>750))issues.push("Instagram: "+content.instagram_caption.length+" caratteri (richiesti 450–750)");
