@@ -3,7 +3,7 @@
 create or replace function public.presssport_editorial_save_revision(p_actor uuid,p_key text,p_content jsonb)
 returns integer language plpgsql security definer set search_path=''
 as $fn$
-declare n integer; ig text; li text;
+declare n integer; ig text; li text; k text;
 begin
  if not exists (select 1 from auth.users u join presssport_internal.admin_allowlist a
    on lower(a.email)=lower(u.email)
@@ -14,6 +14,10 @@ begin
  if jsonb_typeof(p_content->'instagram_caption')<>'string'
     or jsonb_typeof(p_content->'linkedin_caption')<>'string'
  then raise exception 'invalid captions'; end if;
+ for k in select unnest(array['visual_brief','fact_checks','suggested_alt_text']) loop
+   if jsonb_typeof(p_content->k)<>'string' or btrim(p_content->>k)=''
+   then raise exception 'missing editorial field'; end if;
+ end loop;
  ig:=p_content->>'instagram_caption';
  li:=p_content->>'linkedin_caption';
  if char_length(ig) not between 450 and 750 or char_length(li) not between 650 and 1000
