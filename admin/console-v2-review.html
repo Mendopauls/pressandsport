@@ -59,7 +59,7 @@ async function loadJobs(){
    const assetId=document.createElement("input");assetId.placeholder="ID file Google Drive";assetId.required=true;assetId.pattern="[A-Za-z0-9_-]{15,100}";assetId.value=item.asset_file_id||"";
    const assetName=document.createElement("input");assetName.placeholder="Nome file immagine";assetName.required=true;assetName.maxLength=220;assetName.value=item.asset_name||"";
    const assign=document.createElement("button");assign.textContent="Associa fotografia (da verificare)";assign.type="submit";attach.append(assetId,assetName,assign);article.append(attach);
-   attach.addEventListener("submit",async e=>{e.preventDefault();try{await callJobs("asset",{job_key:item.job_key,file_id:assetId.value.trim(),name:assetName.value.trim()});await loadJobs();note("Fotografia associata, verifica ancora necessaria.");}catch(error){note("Associazione non riuscita: "+error.message)}});
+   attach.addEventListener("submit",async e=>{e.preventDefault();try{if(item.asset_file_id===assetId.value.trim()&&item.asset_name===assetName.value.trim()){note("Fotografia già associata: nessuna modifica necessaria.");return;}await callJobs("asset",{job_key:item.job_key,file_id:assetId.value.trim(),name:assetName.value.trim()});await loadJobs();note("Fotografia associata, verifica ancora necessaria.");}catch(error){note("Associazione non riuscita: "+error.message)}});
    if(item.draft_text){
     const checks=document.createElement("div");
     checks.style.cssText="padding:10px;background:#151515;border:1px solid #555;border-radius:6px;margin:8px 0";
