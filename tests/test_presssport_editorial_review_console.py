@@ -45,6 +45,11 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("Archivio fotografico: file già associato",html)
         self.assertIn("Per sostituirlo occorre una nuova verifica",html)
 
+    def test_duplicate_photo_association_is_skipped(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn("Fotografia già associata: nessuna modifica necessaria.",html)
+        self.assertIn("item.asset_file_id===assetId.value.trim()",html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
