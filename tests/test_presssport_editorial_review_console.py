@@ -40,6 +40,11 @@ class EditorialConsoleTests(unittest.TestCase):
         for name in ("visual_brief","fact_checks","suggested_alt_text"):
             self.assertIn(name,migration)
 
+    def test_existing_photo_is_not_mistaken_for_verified(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn("Archivio fotografico: file già associato",html)
+        self.assertIn("Per sostituirlo occorre una nuova verifica",html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
