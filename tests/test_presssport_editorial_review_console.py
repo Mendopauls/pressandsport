@@ -57,6 +57,14 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("else 'pending' end", migration)
         self.assertIn("then presssport_internal.editorial_assets.verified_at else null end", migration)
 
+    def test_multi_project_directory_is_read_only(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261101_multi_project_foundation.sql").read_text(encoding="utf-8")
+        self.assertIn('callJobs("projects")',html)
+        self.assertIn('const projectsArea=',html)
+        self.assertIn("publication_enabled=false",migration)
+        self.assertNotIn('callJobs("switch-project"',html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
