@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Press &amp; Sport Cloud V2 — Revisione editoriale</title>
+<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p id="build-tag" style="color:#c89b5d">Console revisione editoriale · V2.2 · caption separate</p><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Accedi con l'account amministratore già creato in Supabase. Non è necessario ricevere un link email.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label> <label>Password <input id="password" type="password" autocomplete="current-password" required></label> <button type="submit">Accedi</button></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><section><h2>Bozze Ollama</h2><p>Crea un incarico editoriale per Ollama. Il risultato sarà una bozza da revisionare: nessun invio social.</p><form id="new-job"><label>Codice univoco <input id="job-key" required pattern="[A-Za-z0-9_-]{3,100}" placeholder="post-2026-11-01"></label><p><label>Brief <textarea id="job-brief" required maxlength="12000" rows="5" style="width:100%;background:#151515;color:#fff;border:1px solid #666;border-radius:7px;padding:10px;box-sizing:border-box"></textarea></label></p><button type="submit">Invia a Ollama</button></form><p><button id="refresh-jobs" type="button">Aggiorna bozze</button></p><div id="jobs"></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
+<script type="module">
+import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
+const endpoint="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-v2-queue";
+const status=document.getElementById("status"),rows=document.getElementById("rows");
+const jobsApi="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-ollama-sync";
+const jobsArea=document.getElementById("jobs");
+const loginForm=document.getElementById("login");
+const queuePanel=document.getElementById("rows");
+function showLogin(message="Sessione scaduta o non attiva. Accedi con email e password."){
+ loginForm.hidden=false;queuePanel.replaceChildren();jobsArea.textContent="Accedi per visualizzare le bozze Ollama.";note(message);
+}
+let client;
+function note(s){status.textContent=s}
+async function refresh(){
+ if(!client)return;
+ const {data:{session}}=await client.auth.getSession();
+ if(!session){showLogin();return}
+ try{
+  const r=await fetch(endpoint+"?mode=queue",{headers:{"Authorization":"Bearer "+session.access_token},cache:"no-store"});
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const d=await r.json();rows.replaceChildren();
+  for(const item of d.items||[]){const tr=document.createElement("tr");
+   for(const field of ["post_key","channel","kind","state","planned_at"]){const td=document.createElement("td");td.textContent=String(item[field]??"—");tr.append(td)}rows.append(tr)}
+  loginForm.hidden=true;
+  note("Accesso verificato. Contenuti in coda: "+(d.items||[]).length+". Nessuna pubblicazione attiva.");
+  await loadJobs();
+ }catch(e){note("Coda non disponibile: "+e.message)}
+}
+try{
+ const r=await fetch(endpoint+"?mode=config",{cache:"no-store"});
+ if(!r.ok)throw Error("Configurazione: HTTP "+r.status);
+ const config=await r.json();
+ client=createClient(config.supabase_url,config.publishable_key,{auth:{storageKey:"presssport-v2-web-session",detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+ note("Configurazione caricata. Accedi con l'email amministrativa.");
+ await refresh();
+ client.auth.onAuthStateChange((event)=>{if(event==="SIGNED_OUT")showLogin();});
+}catch(e){note("Errore di configurazione: "+e.message)}
+async function callJobs(mode,payload={}){
+  const {data:{session}}=await client.auth.getSession();
+  if(!session){showLogin();throw Error("Sessione non attiva: effettua l’accesso.");}
+  const response=await fetch(jobsApi+"?mode="+mode,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+session.access_token},body:JSON.stringify(payload),cache:"no-store"});
+  const data=await response.json();if(!response.ok)throw Error(data.error||("HTTP "+response.status));return data;
+}
+async function loadJobs(){
+ try{
+  const data=await callJobs("list");jobsArea.replaceChildren();
+  if(!data.items?.length){jobsArea.textContent="Nessuna bozza Ollama";return}
+  for(const item of data.items){
+   const article=document.createElement("article");article.style.cssText="padding:14px 0;border-bottom:1px solid #444";
+   const title=document.createElement("h3");title.textContent=item.job_key+" · "+item.state;article.append(title);
+   const brief=document.createElement("p");brief.textContent=item.brief;article.append(brief);
+   if(item.draft_text){
+    const checks=document.createElement("div");
+    checks.style.cssText="padding:10px;background:#151515;border:1px solid #555;border-radius:6px;margin:8px 0";
+    let issues=[]; let parsed=null;
+    try {
+      const content=JSON.parse(item.draft_text.trim()); parsed=content;
+      const required=["instagram_caption","linkedin_caption","visual_brief","fact_checks","suggested_alt_text"];
+      for(const key of required)if(typeof content[key]!=="string"||!content[key].trim())issues.push("Campo assente: "+key);
+      if(typeof content.instagram_caption==="string" && (content.instagram_caption.length<450||content.instagram_caption.length>750))issues.push("Instagram: "+content.instagram_caption.length+" caratteri (richiesti 450–750)");
+      if(typeof content.linkedin_caption==="string" && (content.linkedin_caption.length<650||content.linkedin_caption.length>1000))issues.push("LinkedIn: "+content.linkedin_caption.length+" caratteri (richiesti 650–1000)");
+      if(/verificat[ioe]|tutte le fotografie.*presenti/i.test(String(content.fact_checks||"")))issues.push("Dichiarazioni di verifica non supportate: controllo umano necessario");
+      issues.push("Fotografia non selezionata né verificata per questo contenuto");
+    } catch {issues.push("Bozza non in JSON valido: revisione strutturale necessaria");}
+    const verdict=document.createElement("strong");verdict.textContent=issues.length?"REVISIONE NECESSARIA":"Controlli strutturali superati";
+    checks.append(verdict);
+    const ul=document.createElement("ul");for(const issue of issues){const li=document.createElement("li");li.textContent=issue;ul.append(li)}checks.append(ul);article.append(checks);
+    if(parsed){
+      const parts=[["Caption Instagram",parsed.instagram_caption],["Caption LinkedIn",parsed.linkedin_caption],["Indicazioni visual",parsed.visual_brief],["Verifiche dichiarate da Ollama (NON confermate)",parsed.fact_checks],["Testo alternativo proposto",parsed.suggested_alt_text]];
+      for(const [heading,value] of parts){
+        const section=document.createElement("section");section.style.cssText="background:#161616;border:1px solid #444;padding:12px;margin:10px 0;border-radius:8px";
+        const h=document.createElement("h4");h.textContent=heading;section.append(h);
+        const body=document.createElement("p");body.style.whiteSpace="pre-wrap";body.textContent=typeof value==="string"?value:"Campo mancante";section.append(body);
+        article.append(section);
+      }
+    } else {
+      const pre=document.createElement("div");pre.style.whiteSpace="pre-wrap";pre.textContent=item.draft_text;article.append(pre);
+    }
+    const asset=document.createElement("div");asset.style.cssText="border:1px dashed #666;padding:12px;border-radius:8px";
+    const assetText=document.createElement("p");assetText.textContent="Fotografia: da selezionare e verificare. Gli asset archivio Drive non sono automaticamente associati al post.";asset.append(assetText);
+    const drive=document.createElement("a");drive.href="https://drive.google.com/drive/folders/1xOCEw44MoatNs0uSWwsfIMB7xLtZnVS-";drive.target="_blank";drive.rel="noopener noreferrer";drive.textContent="Consulta archivio Press & Sport";asset.append(drive);article.append(asset);
+    const notice=document.createElement("p");
+    notice.style.cssText="color:#ffcf8b;border-left:3px solid #c89b5d;padding:8px 12px";
+    notice.textContent="Bozza AI non verificata: controllare fatti, lunghezza dei testi e immagini originali. Le dichiarazioni di verifica prodotte da Ollama non attestano controlli reali. Nessuna pubblicazione autorizzata.";
+    article.append(notice);
+   }
+   jobsArea.append(article);
+  }
+ }catch(e){if(!String(e.message).includes("Sessione non attiva"))jobsArea.textContent="Errore caricamento bozze: "+e.message}
+}
+document.getElementById("refresh-jobs").addEventListener("click",loadJobs);
+document.getElementById("new-job").addEventListener("submit",async e=>{
+ e.preventDefault();
+ try{
+  const job_key=document.getElementById("job-key").value.trim();
+  const brief=document.getElementById("job-brief").value.trim();
+  await callJobs("enqueue",{job_key,brief});note("Incarico inserito in coda: "+job_key);await loadJobs();
+ }catch(err){note("Impossibile creare incarico: "+err.message)}
+});
+document.getElementById("login").addEventListener("submit",async e=>{
+ e.preventDefault();if(!client)return;
+ try{const {error}=await client.auth.signInWithPassword({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value});
+ document.getElementById("password").value="";
+ if(error)throw error; await refresh();}catch(error){document.getElementById("password").value="";note("Accesso non riuscito: "+error.message)}
+});
+document.getElementById("reload").addEventListener("click",refresh);
+document.getElementById("logout").addEventListener("click",async()=>{if(client)await client.auth.signOut();rows.replaceChildren();note("Sessione chiusa")});
+</script></body></html>
