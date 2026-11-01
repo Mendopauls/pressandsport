@@ -12,13 +12,13 @@ Deno.serve(async req=>{
   if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
   if(!project||!anon||!key)return reply({error:"service_unavailable"},503);
   const url=new URL(req.url),mode=url.searchParams.get("mode");
-  if(!["enqueue","list","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
+  if(!["enqueue","list","projects","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
   const raw=await req.text();
   if(raw.length>40000)return reply({error:"payload_too_large"},413);
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object")return reply({error:"invalid_payload"},400);
   const admin=client();
-  if(mode==="enqueue"||mode==="list"||mode==="asset"||mode==="revision"){
+  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="asset"||mode==="revision"){
     const auth=req.headers.get("Authorization")||"";
     if(!auth.startsWith("Bearer "))return reply({error:"unauthorized"},401);
     const userClient=createClient(project,anon,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -26,6 +26,11 @@ Deno.serve(async req=>{
     if(error||!user?.email_confirmed_at)return reply({error:"unauthorized"},401);
     const {data:allow,error:checkError}=await admin.rpc("presssport_admin_v2_queue",{p_actor:user.id});
     if(checkError||!allow)return reply({error:"forbidden"},403);
+    if(mode==="projects"){
+      const {data:projects,error:projectsError}=await admin.rpc("presssport_admin_content_projects",{p_actor:user.id});
+      if(projectsError)return reply({error:"projects_forbidden"},403);
+      return reply({items:projects});
+    }
     if(mode==="revision"){
       if(typeof data.job_key!=="string"||typeof data.content!=="object"||!data.content)return reply({error:"invalid_revision"},400);
       const {data:version,error:revisionError}=await admin.rpc("presssport_editorial_save_revision",{p_actor:user.id,p_key:data.job_key,p_content:data.content});
