@@ -101,4 +101,12 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("presssport_admin_project_ai_claim",migration)
         self.assertIn("presssport_admin_project_ai_finish",migration)
 
+    def test_project_drafts_are_read_only_and_isolated(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261102_project_draft_read.sql").read_text(encoding="utf-8")
+        self.assertIn("Visualizza bozza AI (non approvata)",html)
+        self.assertIn("copy.textContent=item.draft_text",html)
+        self.assertIn("q.state='draft_for_review'",migration)
+        self.assertIn("p.slug=p_slug",migration)
+
 if __name__=="__main__":unittest.main()
