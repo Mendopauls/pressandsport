@@ -31,6 +31,10 @@ Deno.serve(async req=>{
       if(projectsError)return reply({error:"projects_forbidden"},403);
       return reply({items:projects});
     }
+    if(mode!=="projects"){
+      const selected=data.project_slug??"press-sport";
+      if(selected!=="press-sport")return reply({error:"project_not_enabled"},409);
+    }
     if(mode==="revision"){
       if(typeof data.job_key!=="string"||typeof data.content!=="object"||!data.content)return reply({error:"invalid_revision"},400);
       const {data:version,error:revisionError}=await admin.rpc("presssport_editorial_save_revision",{p_actor:user.id,p_key:data.job_key,p_content:data.content});
