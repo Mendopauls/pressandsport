@@ -109,4 +109,12 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("q.state='draft_for_review'",migration)
         self.assertIn("p.slug=p_slug",migration)
 
+    def test_manual_project_drafts_never_publish(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        sql=(ROOT/"supabase"/"migrations"/"20261102_project_manual_draft.sql").read_text(encoding="utf-8")
+        self.assertIn('callJobs("project-draft-save"',html)
+        self.assertIn('Salva bozza (non pubblicare)',html)
+        self.assertIn("p.slug=p_slug",sql)
+        self.assertIn("state='draft_for_review'",sql)
+
 if __name__=="__main__":unittest.main()
