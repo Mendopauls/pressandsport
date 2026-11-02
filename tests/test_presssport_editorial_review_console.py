@@ -72,6 +72,11 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('jobsArea.hidden=!legacy',html)
         self.assertIn('Spazio in preparazione',html)
 
+    def test_selected_project_is_sent_to_editorial_api(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn('project_slug:projectSelector.value',html)
+        self.assertIn('mode==="projects"?payload',html)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
