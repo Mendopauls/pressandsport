@@ -6,6 +6,8 @@ Deno.serve(async(req)=>{
   if(req.headers.get("Origin")&&req.headers.get("Origin")!=="https://pressandsport.it")return respond({error:"origin_denied"},403);
   if(req.method==="OPTIONS")return new Response(null,{status:204,headers:cors});
   if(req.method!=="POST")return respond({error:"method_not_allowed"},405);
+  // Zero-extra-cost policy: paid AI providers must never be called by this endpoint.
+  return respond({error:"paid_ai_disabled_by_zero_cost_policy",enabled:false,publication:false},503);
   const key=Deno.env.get("PRESSSPORT_CLOUD_AI_API_KEY");
   if(Deno.env.get("PRESSSPORT_CLOUD_AI_ENABLED")!=="true"||!key)return respond({error:"cloud_ai_not_configured",enabled:false},503);
   const url=Deno.env.get("SUPABASE_URL")||"",service=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"",anon=Deno.env.get("SUPABASE_ANON_KEY")||"";
