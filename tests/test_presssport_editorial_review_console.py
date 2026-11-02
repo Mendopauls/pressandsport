@@ -117,4 +117,12 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("p.slug=p_slug",sql)
         self.assertIn("state='draft_for_review'",sql)
 
+    def test_zero_extra_cost_mode(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        cloud=(ROOT/"supabase"/"functions"/"presssport-project-ai"/"index.ts").read_text(encoding="utf-8")
+        self.assertIn("Prepara traccia gratuita",html)
+        self.assertIn("non viene sovrascritta",html)
+        self.assertIn("paid_ai_disabled_by_zero_cost_policy",cloud)
+        self.assertIn("return respond({error:",cloud)
+
 if __name__=="__main__":unittest.main()
