@@ -93,6 +93,16 @@ async function loadProjectQueue(){
    const label=document.createElement("strong");label.textContent=item.external_key+" · "+item.state;
    const brief=document.createElement("p");brief.textContent=item.brief;
    li.append(label,brief);
+   const editor=document.createElement("details");
+   const summary=document.createElement("summary");summary.textContent="Scrivi o modifica bozza manuale";
+   const textarea=document.createElement("textarea");textarea.value=item.draft_text||"";textarea.maxLength=30000;textarea.rows=6;textarea.style.cssText="width:100%;box-sizing:border-box;background:#171717;color:white";
+   const save=document.createElement("button");save.type="button";save.textContent="Salva bozza (non pubblicare)";
+   save.addEventListener("click",async()=>{
+     if(!textarea.value.trim()){note("Inserisci il testo della bozza.");return}
+     try{await callJobs("project-draft-save",{project_slug:selected,job_key:item.external_key,draft_text:textarea.value.trim()});note("Bozza salvata esclusivamente in "+selected+".");await loadProjectQueue()}
+     catch(e){note("Salvataggio non riuscito: "+e.message)}
+   });
+   editor.append(summary,textarea,save);li.append(editor);
    if(item.state==="draft_for_review"&&typeof item.draft_text==="string"){
      const draft=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Visualizza bozza AI (non approvata)";
      const copy=document.createElement("pre");copy.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere";copy.textContent=item.draft_text;draft.append(summary,copy);li.append(draft);
