@@ -77,6 +77,15 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('project_slug:projectSelector.value',html)
         self.assertIn('mode==="projects"?payload',html)
 
+    def test_project_editorial_queue_is_separate(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261102_project_queues.sql").read_text(encoding="utf-8")
+        self.assertIn('callJobs("project-list"',html)
+        self.assertIn('callJobs("project-enqueue"',html)
+        self.assertIn("unique(project_id,external_key)",migration)
+        self.assertIn("enable row level security",migration)
+        self.assertIn("p_slug='press-sport'",migration)
+
     def test_asset_verification_is_explicit(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
         self.assertIn('item.asset_state==="verified"',html)
