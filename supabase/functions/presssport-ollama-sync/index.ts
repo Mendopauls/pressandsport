@@ -12,13 +12,13 @@ Deno.serve(async req=>{
   if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
   if(!project||!anon||!key)return reply({error:"service_unavailable"},503);
   const url=new URL(req.url),mode=url.searchParams.get("mode");
-  if(!["enqueue","list","projects","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
+  if(!["enqueue","list","projects","project-list","project-enqueue","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
   const raw=await req.text();
   if(raw.length>40000)return reply({error:"payload_too_large"},413);
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object")return reply({error:"invalid_payload"},400);
   const admin=client();
-  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="asset"||mode==="revision"){
+  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="asset"||mode==="revision"){
     const auth=req.headers.get("Authorization")||"";
     if(!auth.startsWith("Bearer "))return reply({error:"unauthorized"},401);
     const userClient=createClient(project,anon,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -30,6 +30,18 @@ Deno.serve(async req=>{
       const {data:projects,error:projectsError}=await admin.rpc("presssport_admin_content_projects",{p_actor:user.id});
       if(projectsError)return reply({error:"projects_forbidden"},403);
       return reply({items:projects});
+    }
+    if(mode==="project-list"||mode==="project-enqueue"){
+      if(typeof data.project_slug!=="string"||data.project_slug==="press-sport")return reply({error:"invalid_project"},400);
+      if(mode==="project-list"){
+        const {data:items,error:e}=await admin.rpc("presssport_admin_project_queue",{p_actor:user.id,p_slug:data.project_slug});
+        if(e)return reply({error:"project_queue_unavailable"},400);
+        return reply({items});
+      }
+      const {data:inserted,error:e}=await admin.rpc("presssport_admin_project_enqueue",{p_actor:user.id,p_slug:data.project_slug,p_key:data.job_key,p_brief:data.brief});
+      if(e)return reply({error:"project_enqueue_failed"},400);
+      if(!inserted)return reply({error:"invalid_or_duplicate_project_job"},409);
+      return reply({accepted:true,project_slug:data.project_slug,state:"pending_cloud_ai"},201);
     }
     if(mode!=="projects"){
       const selected=data.project_slug??"press-sport";
