@@ -98,8 +98,9 @@ async function loadProjectQueue(){
    const textarea=document.createElement("textarea");textarea.value=item.draft_text||"";textarea.maxLength=30000;textarea.rows=6;textarea.style.cssText="width:100%;box-sizing:border-box;background:#171717;color:white";
    const template=document.createElement("button");template.type="button";template.textContent="Prepara traccia gratuita";
    template.addEventListener("click",()=>{
+     if(textarea.value.trim()){note("La bozza contiene già testo: non viene sovrascritta.");return}
      const project=projectSelector.options[projectSelector.selectedIndex]?.textContent||selected;
-     textarea.value=["PROGETTO: "+project,"ARGOMENTO: "+item.brief,"","APERTURA: [Inserire un fatto verificato o una domanda pertinente]","","TESTO: [Descrivere attività e contesto, senza inventare dati]","","INVITO ALL'AZIONE: [Inserire solo se coerente]","","VERIFICHE: fonti, nomi, date, autorizzazioni immagini.","STATO: BOZZA DA REVISIONARE — NON PUBBLICARE."].join("\\n");
+     textarea.value=["PROGETTO: "+project,"ARGOMENTO: "+item.brief,"","APERTURA: [Inserire un fatto verificato o una domanda pertinente]","","TESTO: [Descrivere attività e contesto, senza inventare dati]","","INVITO ALL'AZIONE: [Inserire solo se coerente]","","VERIFICHE: fonti, nomi, date, autorizzazioni immagini.","STATO: BOZZA DA REVISIONARE — NON PUBBLICARE."].join("\n");
      note("Traccia locale gratuita preparata. Modifica e salva quando pronta.");
    });
    editor.append(template);
