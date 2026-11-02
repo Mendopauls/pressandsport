@@ -12,13 +12,13 @@ Deno.serve(async req=>{
   if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
   if(!project||!anon||!key)return reply({error:"service_unavailable"},503);
   const url=new URL(req.url),mode=url.searchParams.get("mode");
-  if(!["enqueue","list","projects","project-list","project-enqueue","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
+  if(!["enqueue","list","projects","project-list","project-enqueue","project-draft-save","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
   const raw=await req.text();
   if(raw.length>40000)return reply({error:"payload_too_large"},413);
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object")return reply({error:"invalid_payload"},400);
   const admin=client();
-  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="asset"||mode==="revision"){
+  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="project-draft-save"||mode==="asset"||mode==="revision"){
     const auth=req.headers.get("Authorization")||"";
     if(!auth.startsWith("Bearer "))return reply({error:"unauthorized"},401);
     const userClient=createClient(project,anon,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -33,6 +33,12 @@ Deno.serve(async req=>{
     }
     if(mode==="project-list"||mode==="project-enqueue"){
       if(typeof data.project_slug!=="string"||data.project_slug==="press-sport")return reply({error:"invalid_project"},400);
+      if(mode==="project-draft-save"){
+        if(typeof data.job_key!=="string"||typeof data.draft_text!=="string")return reply({error:"invalid_draft"},400);
+        const {data:saved,error:e}=await admin.rpc("presssport_admin_project_draft_save",{p_actor:user.id,p_slug:data.project_slug,p_key:data.job_key,p_text:data.draft_text});
+        if(e||!saved)return reply({error:"draft_save_rejected"},400);
+        return reply({saved:true,state:"draft_for_review",publication:false});
+      }
       if(mode==="project-list"){
         const {data:items,error:e}=await admin.rpc("presssport_admin_project_queue",{p_actor:user.id,p_slug:data.project_slug});
         if(e)return reply({error:"project_queue_unavailable"},400);
