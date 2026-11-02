@@ -92,4 +92,13 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('callJobs("asset"',html)
         self.assertIn("Approvazione umana",html)
 
+    def test_cloud_ai_feature_gate_and_isolated_claim(self):
+        worker=(ROOT/"supabase"/"functions"/"presssport-project-ai"/"index.ts").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261102_project_ai_claim_finish.sql").read_text(encoding="utf-8")
+        self.assertIn("PRESSSPORT_CLOUD_AI_ENABLED",worker)
+        self.assertIn("PRESSSPORT_CLOUD_AI_API_KEY",worker)
+        self.assertIn("cloud_ai_not_configured",worker)
+        self.assertIn("presssport_admin_project_ai_claim",migration)
+        self.assertIn("presssport_admin_project_ai_finish",migration)
+
 if __name__=="__main__":unittest.main()
