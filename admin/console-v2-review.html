@@ -130,6 +130,31 @@ function renderProjectQueue(){
      catch(e){note("Pianificazione non salvata: "+e.message)}
    });
    planning.append(channel,day,schedule);li.append(planning);
+   const sourceBox=document.createElement("details");
+   const sourceSummary=document.createElement("summary");sourceSummary.textContent="Materiale sorgente Google Drive";
+   const sourceNotice=document.createElement("p");sourceNotice.textContent="Associazione dichiarata, NON verificata: il file resta privato e non viene copiato.";
+   const sourceId=document.createElement("input");sourceId.type="text";sourceId.placeholder="ID file Drive";sourceId.value=item.source_drive_file_id||"";sourceId.setAttribute("aria-label","ID file sorgente Google Drive");
+   const sourceName=document.createElement("input");sourceName.type="text";sourceName.placeholder="Nome del file";sourceName.maxLength=220;sourceName.value=item.source_drive_filename||"";sourceName.setAttribute("aria-label","Nome del file sorgente");
+   const sourceSave=document.createElement("button");sourceSave.type="button";sourceSave.textContent="Associa file esistente (non pubblicare)";
+   sourceSave.addEventListener("click",async()=>{
+     if(!/^[A-Za-z0-9_-]{15,100}$/.test(sourceId.value.trim())||!sourceName.value.trim()){
+       note("Inserisci ID Drive valido e nome del file.");return;
+     }
+     try{
+       await callJobs("project-source-attach",{project_slug:selected,job_key:item.external_key,drive_file_id:sourceId.value.trim(),drive_filename:sourceName.value.trim()});
+       note("Riferimento Drive salvato per "+selected+". Accessibilità e diritti non ancora verificati.");
+       await loadProjectQueue();
+     }catch(e){note("Associazione Drive non riuscita: "+e.message)}
+   });
+   sourceBox.append(sourceSummary,sourceNotice,sourceId,sourceName,sourceSave);
+   if(item.source_drive_file_id){
+     const sourceLink=document.createElement("a");
+     sourceLink.href="https://drive.google.com/file/d/"+encodeURIComponent(item.source_drive_file_id)+"/view";
+     sourceLink.target="_blank";sourceLink.rel="noopener noreferrer";
+     sourceLink.textContent="Apri sorgente associata: "+(item.source_drive_filename||"file Drive");
+     const sourceLine=document.createElement("p");sourceLine.append(sourceLink);sourceBox.append(sourceLine);
+   }
+   li.append(sourceBox);
    const editor=document.createElement("details");
    const summary=document.createElement("summary");summary.textContent="Scrivi o modifica bozza manuale";
    const textarea=document.createElement("textarea");textarea.value=item.draft_text||"";textarea.maxLength=30000;textarea.rows=6;textarea.style.cssText="width:100%;box-sizing:border-box;background:#171717;color:white";
@@ -165,6 +190,8 @@ document.getElementById("export-project-drafts").addEventListener("click",()=>{
  const text=["# Archivio bozze — "+loadedProjectSlug,"","Esportazione manuale. Solo i primi 50 incarichi caricati. Nessun testo è approvato o pubblicato.",""];
  for(const item of items){
   text.push("## "+safe(item.external_key),"","Stato: "+safe(item.state),"","Brief:","",safe(item.brief),"");
+  text.push("Canale: "+safe(item.channel||"unspecified"),"Data prevista: "+safe(item.planned_date||"da definire"),"");
+  if(item.source_drive_file_id)text.push("Riferimento Drive (non verificato): "+safe(item.source_drive_file_id),"Nome file: "+safe(item.source_drive_filename),"");
   if(item.draft_text)text.push("Bozza non approvata:","",safe(item.draft_text),"");
   text.push("---","");
  }
