@@ -18,7 +18,7 @@ Deno.serve(async req=>{
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object")return reply({error:"invalid_payload"},400);
   const admin=client();
-  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="project-draft-save"||mode==="project-schedule"||mode==="project-schedule"||mode==="asset"||mode==="revision"){
+  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="project-draft-save"||mode==="project-schedule"||mode==="asset"||mode==="revision"){
     const auth=req.headers.get("Authorization")||"";
     if(!auth.startsWith("Bearer "))return reply({error:"unauthorized"},401);
     const userClient=createClient(project,anon,{auth:{persistSession:false,autoRefreshToken:false}});
