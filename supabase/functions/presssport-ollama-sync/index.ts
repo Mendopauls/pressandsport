@@ -12,13 +12,13 @@ Deno.serve(async req=>{
   if(req.method!=="POST")return reply({error:"method_not_allowed"},405);
   if(!project||!anon||!key)return reply({error:"service_unavailable"},503);
   const url=new URL(req.url),mode=url.searchParams.get("mode");
-  if(!["enqueue","list","projects","project-list","project-enqueue","project-draft-save","project-schedule","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
+  if(!["enqueue","list","projects","project-list","project-enqueue","project-draft-save","project-schedule","project-source-attach","asset","revision","claim","complete"].includes(mode||""))return reply({error:"not_found"},404);
   const raw=await req.text();
   if(raw.length>40000)return reply({error:"payload_too_large"},413);
   const data=JSON.parse(raw);
   if(!data||typeof data!=="object")return reply({error:"invalid_payload"},400);
   const admin=client();
-  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="project-draft-save"||mode==="project-schedule"||mode==="asset"||mode==="revision"){
+  if(mode==="enqueue"||mode==="list"||mode==="projects"||mode==="project-list"||mode==="project-enqueue"||mode==="project-draft-save"||mode==="project-schedule"||mode==="project-source-attach"||mode==="asset"||mode==="revision"){
     const auth=req.headers.get("Authorization")||"";
     if(!auth.startsWith("Bearer "))return reply({error:"unauthorized"},401);
     const userClient=createClient(project,anon,{auth:{persistSession:false,autoRefreshToken:false}});
@@ -31,8 +31,16 @@ Deno.serve(async req=>{
       if(projectsError)return reply({error:"projects_forbidden"},403);
       return reply({items:projects});
     }
-    if(["project-list","project-enqueue","project-draft-save","project-schedule"].includes(mode||"")){
+    if(["project-list","project-enqueue","project-draft-save","project-schedule","project-source-attach"].includes(mode||"")){
       if(typeof data.project_slug!=="string"||data.project_slug==="press-sport")return reply({error:"invalid_project"},400);
+      if(mode==="project-source-attach"){
+        if(typeof data.job_key!=="string"||typeof data.drive_file_id!=="string"||typeof data.drive_filename!=="string")return reply({error:"invalid_source"},400);
+        const {data:saved,error:e}=await admin.rpc("presssport_admin_project_source_attach",{
+          p_actor:user.id,p_slug:data.project_slug,p_key:data.job_key,p_file_id:data.drive_file_id,p_filename:data.drive_filename
+        });
+        if(e||!saved)return reply({error:"source_rejected"},400);
+        return reply({saved:true,verified:false,publication:false});
+      }
       if(mode==="project-schedule"){
         if(typeof data.job_key!=="string"||typeof data.channel!=="string")return reply({error:"invalid_schedule"},400);
         const day=data.planned_date===null||data.planned_date===""?null:data.planned_date;
