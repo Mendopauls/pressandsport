@@ -125,4 +125,16 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("paid_ai_disabled_by_zero_cost_policy",cloud)
         self.assertIn("return respond({error:",cloud)
 
+    def test_free_calendar_and_export(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        api=(ROOT/"supabase"/"functions"/"presssport-ollama-sync"/"index.ts").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261103_project_calendar_free.sql").read_text(encoding="utf-8")
+        self.assertIn("Esporta fino a 50 incarichi",html)
+        self.assertIn("URL.createObjectURL",html)
+        self.assertIn('callJobs("project-schedule"',html)
+        self.assertIn('presssport_admin_project_schedule',api)
+        self.assertIn("p.slug=p_slug",migration)
+        self.assertIn("planned_date",migration)
+        self.assertIn("publication",html.lower())
+
 if __name__=="__main__":unittest.main()
