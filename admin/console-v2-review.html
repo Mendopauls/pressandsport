@@ -66,7 +66,7 @@ async function loadProjects(){
    const list=document.createElement("ul");
    for(const p of result.items||[]){
      const item=document.createElement("li");
-     item.textContent=p.name+" · "+(p.status==="active"?"attivo":"in preparazione")+" · bozze collegate: "+p.assigned_jobs+" · pubblicazione disattivata";
+     item.textContent=p.name+" · "+(p.status==="active"?"attivo":"in preparazione")+" · incarichi storici: "+p.assigned_jobs+" · pubblicazione disattivata";
      list.append(item);
    }
    projectsArea.append(list);
@@ -103,7 +103,7 @@ function renderProjectQueue(){
  if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value)return;
  projectJobs.replaceChildren();
  const filter=projectJobFilter.value.trim().toLocaleLowerCase("it");
- const matching=visibleProjectItems.filter(item=>(String(item.external_key||"")+" "+String(item.brief||"")+" "+String(item.state||"")).toLocaleLowerCase("it").includes(filter));
+ const matching=visibleProjectItems.filter(item=>(String(item.external_key||"")+" "+String(item.brief||"")+" "+String(item.state||"")+" "+String(item.channel||"")+" "+String(item.planned_date||"")).toLocaleLowerCase("it").includes(filter));
  const list=document.createElement("ul");
  projectQueueSummary.textContent=matching.length+" incarichi visibili su "+visibleProjectItems.length+" caricati (massimo 50).";
  for(const item of matching){
@@ -111,6 +111,18 @@ function renderProjectQueue(){
    const label=document.createElement("strong");label.textContent=item.external_key+" · "+item.state;
    const brief=document.createElement("p");brief.textContent=item.brief;
    li.append(label,brief);
+   const planning=document.createElement("div");planning.style.cssText="display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;align-items:center";
+   const channel=document.createElement("select");channel.setAttribute("aria-label","Canale editoriale");
+   for(const [value,caption] of [["unspecified","Da scegliere"],["instagram","Instagram"],["facebook","Facebook"],["linkedin","LinkedIn"],["website","Sito web"],["other","Altro"]]){const option=document.createElement("option");option.value=value;option.textContent=caption;channel.append(option)}
+   channel.value=item.channel||"unspecified";
+   const day=document.createElement("input");day.type="date";day.setAttribute("aria-label","Data editoriale prevista");day.value=item.planned_date||"";
+   const schedule=document.createElement("button");schedule.type="button";schedule.textContent="Salva pianificazione";
+   schedule.addEventListener("click",async()=>{
+     try{await callJobs("project-schedule",{project_slug:selected,job_key:item.external_key,channel:channel.value,planned_date:day.value||null});
+       note("Pianificazione editoriale salvata per "+selected+". Nessuna pubblicazione programmata.");await loadProjectQueue()}
+     catch(e){note("Pianificazione non salvata: "+e.message)}
+   });
+   planning.append(channel,day,schedule);li.append(planning);
    const editor=document.createElement("details");
    const summary=document.createElement("summary");summary.textContent="Scrivi o modifica bozza manuale";
    const textarea=document.createElement("textarea");textarea.value=item.draft_text||"";textarea.maxLength=30000;textarea.rows=6;textarea.style.cssText="width:100%;box-sizing:border-box;background:#171717;color:white";
