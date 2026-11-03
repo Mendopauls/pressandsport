@@ -31,7 +31,7 @@ Deno.serve(async req=>{
       if(projectsError)return reply({error:"projects_forbidden"},403);
       return reply({items:projects});
     }
-    if(mode==="project-list"||mode==="project-enqueue"){
+    if(["project-list","project-enqueue","project-draft-save","project-schedule"].includes(mode||"")){
       if(typeof data.project_slug!=="string"||data.project_slug==="press-sport")return reply({error:"invalid_project"},400);
       if(mode==="project-schedule"){
         if(typeof data.job_key!=="string"||typeof data.channel!=="string")return reply({error:"invalid_schedule"},400);
@@ -55,7 +55,7 @@ Deno.serve(async req=>{
       const {data:inserted,error:e}=await admin.rpc("presssport_admin_project_enqueue",{p_actor:user.id,p_slug:data.project_slug,p_key:data.job_key,p_brief:data.brief});
       if(e)return reply({error:"project_enqueue_failed"},400);
       if(!inserted)return reply({error:"invalid_or_duplicate_project_job"},409);
-      return reply({accepted:true,project_slug:data.project_slug,state:"pending_cloud_ai"},201);
+      return reply({accepted:true,project_slug:data.project_slug,state:"pending"},201);
     }
     if(mode!=="projects"){
       const selected=data.project_slug??"press-sport";
