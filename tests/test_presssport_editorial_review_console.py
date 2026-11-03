@@ -154,4 +154,23 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('callJobs("project-draft-save"',renderer)
         self.assertIn('if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value)return;',renderer)
 
+    def test_private_drive_source_references_are_scoped_and_not_published(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        api=(ROOT/"supabase"/"functions"/"presssport-ollama-sync"/"index.ts").read_text(encoding="utf-8")
+        migration=(ROOT/"supabase"/"migrations"/"20261103_project_drive_source_link.sql").read_text(encoding="utf-8")
+        self.assertIn('callJobs("project-source-attach"',html)
+        self.assertIn("Associazione dichiarata, NON verificata",html)
+        self.assertIn("source_drive_file_id",html)
+        self.assertIn("presssport_admin_project_source_attach",api)
+        self.assertIn("project-source-attach",api)
+        self.assertIn("p.slug=p_slug",migration)
+        self.assertIn("project_queue_source_pair_ck",migration)
+        self.assertIn("source_drive_file_id",migration)
+
+    def test_project_editor_summary_is_first_and_mismatch_is_guarded(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        self.assertIn("editor.append(summary,template,textarea,save)",html)
+        self.assertIn('if(projectSelector.value!==selected)return note(',html)
+        self.assertNotIn("editor.append(template);",html)
+
 if __name__=="__main__":unittest.main()
