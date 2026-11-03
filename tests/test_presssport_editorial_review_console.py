@@ -70,7 +70,7 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('id="project-selector"',html)
         self.assertIn('draftPanel.hidden=!legacy',html)
         self.assertIn('jobsArea.hidden=!legacy',html)
-        self.assertIn('Spazio in preparazione',html)
+        self.assertIn('Spazio editoriale separato',html)
 
     def test_selected_project_is_sent_to_editorial_api(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
