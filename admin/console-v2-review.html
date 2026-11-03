@@ -107,6 +107,7 @@ async function loadProjectQueue(){
 }
 function renderProjectQueue(){
  if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value)return;
+ const selected=loadedProjectSlug;
  projectJobs.replaceChildren();
  const filter=projectJobFilter.value.trim().toLocaleLowerCase("it");
  const matching=visibleProjectItems.filter(item=>(String(item.external_key||"")+" "+String(item.brief||"")+" "+String(item.state||"")+" "+String(item.channel||"")+" "+String(item.planned_date||"")).toLocaleLowerCase("it").includes(filter));
