@@ -5,13 +5,17 @@ on:
     paths:
       - 'admin/console-v2-review.html'
       - 'tests/test_presssport_editorial_review_console.py'
-      - 'supabase/migrations/*editorial*.sql'
+      - 'supabase/migrations/**'
+      - 'supabase/functions/presssport-ollama-sync/**'
+      - 'supabase/functions/presssport-project-ai/**'
       - '.github/workflows/editorial-console-checks.yml'
   pull_request:
     paths:
       - 'admin/console-v2-review.html'
       - 'tests/test_presssport_editorial_review_console.py'
-      - 'supabase/migrations/*editorial*.sql'
+      - 'supabase/migrations/**'
+      - 'supabase/functions/presssport-ollama-sync/**'
+      - 'supabase/functions/presssport-project-ai/**'
       - '.github/workflows/editorial-console-checks.yml'
 permissions:
   contents: read
