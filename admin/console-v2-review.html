@@ -67,6 +67,12 @@ async function loadProjects(){
    for(const p of result.items||[]){
      const item=document.createElement("li");
      item.textContent=p.name+" · "+(p.status==="active"?"attivo":"in preparazione")+" · incarichi storici: "+p.assigned_jobs+" · pubblicazione disattivata";
+     if(typeof p.drive_folder_id==="string"&&/^[A-Za-z0-9_-]{15,100}$/.test(p.drive_folder_id)){
+       const link=document.createElement("a");
+       link.href="https://drive.google.com/drive/folders/"+encodeURIComponent(p.drive_folder_id);
+       link.target="_blank";link.rel="noopener noreferrer";link.textContent=" · Apri archivio Drive";
+       item.append(link);
+     } else item.append(document.createTextNode(" · Archivio Drive da associare"));
      list.append(item);
    }
    projectsArea.append(list);
