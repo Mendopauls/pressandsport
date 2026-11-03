@@ -140,7 +140,7 @@ class EditorialConsoleTests(unittest.TestCase):
 
     def test_project_write_routes_are_reachable(self):
         api=(ROOT/"supabase"/"functions"/"presssport-ollama-sync"/"index.ts").read_text(encoding="utf-8")
-        self.assertIn('["project-list","project-enqueue","project-draft-save","project-schedule"].includes(mode||"")',api)
+        self.assertIn('["project-list","project-enqueue","project-draft-save","project-schedule","project-source-attach"].includes(mode||"")',api)
         self.assertIn('if(mode==="project-draft-save")',api)
         self.assertIn('if(mode==="project-schedule")',api)
         self.assertNotIn('if(mode==="project-list"||mode==="project-enqueue"){',api)
