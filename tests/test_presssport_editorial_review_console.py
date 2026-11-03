@@ -146,4 +146,12 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertNotIn('if(mode==="project-list"||mode==="project-enqueue"){',api)
         self.assertIn('state:"pending"',api)
 
+    def test_project_queue_renderer_scopes_selected_project(self):
+        html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
+        renderer=html.split("function renderProjectQueue(){",1)[1].split('projectJobFilter.addEventListener',1)[0]
+        self.assertIn("const selected=loadedProjectSlug;",renderer)
+        self.assertIn('callJobs("project-schedule"',renderer)
+        self.assertIn('callJobs("project-draft-save"',renderer)
+        self.assertIn('if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value)return;',renderer)
+
 if __name__=="__main__":unittest.main()
