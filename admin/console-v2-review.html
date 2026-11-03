@@ -125,6 +125,7 @@ function renderProjectQueue(){
    const day=document.createElement("input");day.type="date";day.setAttribute("aria-label","Data editoriale prevista");day.value=item.planned_date||"";
    const schedule=document.createElement("button");schedule.type="button";schedule.textContent="Salva pianificazione";
    schedule.addEventListener("click",async()=>{
+     if(projectSelector.value!==selected)return note("Progetto cambiato: ripeti l’operazione nello spazio corretto.");
      try{await callJobs("project-schedule",{project_slug:selected,job_key:item.external_key,channel:channel.value,planned_date:day.value||null});
        note("Pianificazione editoriale salvata per "+selected+". Nessuna pubblicazione programmata.");await loadProjectQueue()}
      catch(e){note("Pianificazione non salvata: "+e.message)}
@@ -137,6 +138,7 @@ function renderProjectQueue(){
    const sourceName=document.createElement("input");sourceName.type="text";sourceName.placeholder="Nome del file";sourceName.maxLength=220;sourceName.value=item.source_drive_filename||"";sourceName.setAttribute("aria-label","Nome del file sorgente");
    const sourceSave=document.createElement("button");sourceSave.type="button";sourceSave.textContent="Associa file esistente (non pubblicare)";
    sourceSave.addEventListener("click",async()=>{
+     if(projectSelector.value!==selected)return note("Progetto cambiato: ripeti l’operazione nello spazio corretto.");
      if(!/^[A-Za-z0-9_-]{15,100}$/.test(sourceId.value.trim())||!sourceName.value.trim()){
        note("Inserisci ID Drive valido e nome del file.");return;
      }
@@ -165,14 +167,14 @@ function renderProjectQueue(){
      textarea.value=["PROGETTO: "+project,"ARGOMENTO: "+item.brief,"","APERTURA: [Inserire un fatto verificato o una domanda pertinente]","","TESTO: [Descrivere attività e contesto, senza inventare dati]","","INVITO ALL'AZIONE: [Inserire solo se coerente]","","VERIFICHE: fonti, nomi, date, autorizzazioni immagini.","STATO: BOZZA DA REVISIONARE — NON PUBBLICARE."].join("\n");
      note("Traccia locale gratuita preparata. Modifica e salva quando pronta.");
    });
-   editor.append(template);
   const save=document.createElement("button");save.type="button";save.textContent="Salva bozza (non pubblicare)";
    save.addEventListener("click",async()=>{
+     if(projectSelector.value!==selected)return note("Progetto cambiato: ripeti l’operazione nello spazio corretto.");
      if(!textarea.value.trim()){note("Inserisci il testo della bozza.");return}
      try{await callJobs("project-draft-save",{project_slug:selected,job_key:item.external_key,draft_text:textarea.value.trim()});note("Bozza salvata esclusivamente in "+selected+".");await loadProjectQueue()}
      catch(e){note("Salvataggio non riuscito: "+e.message)}
    });
-   editor.append(summary,textarea,save);li.append(editor);
+   editor.append(summary,template,textarea,save);li.append(editor);
    if(item.state==="draft_for_review"&&typeof item.draft_text==="string"){
      const draft=document.createElement("details");const summary=document.createElement("summary");summary.textContent="Visualizza bozza AI (non approvata)";
      const copy=document.createElement("pre");copy.style.cssText="white-space:pre-wrap;overflow-wrap:anywhere";copy.textContent=item.draft_text;draft.append(summary,copy);li.append(draft);
