@@ -124,7 +124,7 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn("Prepara traccia gratuita",html)
         self.assertIn("non viene sovrascritta",html)
         self.assertIn("paid_ai_disabled_by_zero_cost_policy",cloud)
-        self.assertIn("return respond({error:",cloud)
+        self.assertIn("return new Response(",cloud)
 
     def test_free_calendar_and_export(self):
         html=(ROOT/"admin"/"console-v2-review.html").read_text(encoding="utf-8")
