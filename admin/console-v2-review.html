@@ -1,6 +1,9 @@
 <!doctype html>
 <html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Press &amp; Sport Cloud V2 — Revisione editoriale</title>
-<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p id="build-tag" style="color:#c89b5d">Console revisione editoriale · V2.2 · caption separate</p><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Accedi con l'account amministratore già creato in Supabase. Non è necessario ricevere un link email.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label> <label>Password <input id="password" type="password" autocomplete="current-password" required></label> <button type="submit">Accedi</button></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Progetti editoriali</h2><p>Directory in sola lettura. I nuovi progetti non sono ancora abilitati alla generazione o pubblicazione.</p><label>Progetto <select id="project-selector" style="background:#151515;color:white;padding:10px;border:1px solid #777;border-radius:7px"><option value="press-sport">Press & Sport</option></select></label><p id="selected-project-status"></p><div id="other-project-editor" hidden><h3>Nuovo incarico del progetto</h3><form id="project-job-form"><label>Codice <input id="project-job-key" required pattern="[A-Za-z0-9_-]{3,100}"></label><label>Brief <textarea id="project-job-brief" required maxlength="12000" rows="4" style="width:100%"></textarea></label><button type="submit">Salva nella coda del progetto</button></form><p>Modalità a costo aggiuntivo zero: tracce editoriali locali, scrittura e revisione manuale. Nessuna chiamata ad API AI a pagamento o pubblicazione.</p><div id="project-jobs"></div></div><div id="project-directory"></div></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><section><h2>Bozze Ollama</h2><p>Crea un incarico editoriale per Ollama. Il risultato sarà una bozza da revisionare: nessun invio social.</p><form id="new-job"><label>Codice univoco <input id="job-key" required pattern="[A-Za-z0-9_-]{3,100}" placeholder="post-2026-11-01"></label><p><label>Brief <textarea id="job-brief" required maxlength="12000" rows="5" style="width:100%;background:#151515;color:#fff;border:1px solid #666;border-radius:7px;padding:10px;box-sizing:border-box"></textarea></label></p><button type="submit">Invia a Ollama</button></form><p><button id="refresh-jobs" type="button">Aggiorna bozze</button></p><div id="jobs"></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
+<style>:root{color-scheme:dark;font:16px system-ui,Arial,sans-serif}body{margin:0;background:#111;color:#eee}main{max-width:1000px;margin:30px auto;padding:18px}h1{font-size:clamp(1.6rem,3.7vw,2.4rem)}section{padding:18px;background:#202020;border:1px solid #494949;border-radius:10px;margin:18px 0}p{color:#bbb}input,button{padding:11px;font:inherit;border-radius:7px}input{background:#151515;color:white;border:1px solid #666}button{background:#c89b5d;color:#111;font-weight:bold;border:0;cursor:pointer}label{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.scroll{overflow-x:auto}table{width:100%;border-collapse:collapse}td,th{text-align:left;padding:10px;border-bottom:1px solid #454545}.status{white-space:pre-wrap}</style></head><body><main><h1>PRESS &amp; SPORT CLOUD V2</h1><p id="build-tag" style="color:#c89b5d">Console revisione editoriale · V2.2 · caption separate</p><p>Redazione multicanale · Coda editoriale di sola lettura</p><section><h2>Accesso amministratore</h2><p>Accedi con l'account amministratore già creato in Supabase. Non è necessario ricevere un link email.</p><form id="login"><label>Email <input id="email" type="email" autocomplete="username" required></label> <label>Password <input id="password" type="password" autocomplete="current-password" required></label> <button type="submit">Accedi</button></form><p id="status" class="status" role="status">Caricamento configurazione…</p><button id="reload" type="button">Aggiorna coda</button> <button id="logout" type="button">Esci</button></section><section><h2>Progetti editoriali</h2><p>Directory in sola lettura. I nuovi progetti non sono ancora abilitati alla generazione o pubblicazione.</p><label>Progetto <select id="project-selector" style="background:#151515;color:white;padding:10px;border:1px solid #777;border-radius:7px"><option value="press-sport">Press & Sport</option></select></label><p id="selected-project-status"></p><div id="other-project-editor" hidden><h3>Nuovo incarico del progetto</h3><form id="project-job-form"><label>Codice <input id="project-job-key" required pattern="[A-Za-z0-9_-]{3,100}"></label><label>Brief <textarea id="project-job-brief" required maxlength="12000" rows="4" style="width:100%"></textarea></label><button type="submit">Salva nella coda del progetto</button></form><p>Modalità a costo aggiuntivo zero: tracce editoriali locali, scrittura e revisione manuale. Nessuna chiamata ad API AI a pagamento o pubblicazione.</p><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0">
+<label>Cerca nella coda <input id="project-job-filter" placeholder="Codice o argomento" autocomplete="off"></label>
+<button type="button" id="export-project-drafts">Esporta fino a 50 incarichi (.md)</button>
+</div><p id="project-queue-summary" role="status"></p><div id="project-jobs"></div></div><div id="project-directory"></div></section><section><h2>Coda V2</h2><div class="scroll"><table><thead><tr><th>Codice</th><th>Canale</th><th>Formato</th><th>Stato</th><th>Data prevista</th></tr></thead><tbody id="rows"></tbody></table></div></section><section><h2>Bozze Ollama</h2><p>Crea un incarico editoriale per Ollama. Il risultato sarà una bozza da revisionare: nessun invio social.</p><form id="new-job"><label>Codice univoco <input id="job-key" required pattern="[A-Za-z0-9_-]{3,100}" placeholder="post-2026-11-01"></label><p><label>Brief <textarea id="job-brief" required maxlength="12000" rows="5" style="width:100%;background:#151515;color:#fff;border:1px solid #666;border-radius:7px;padding:10px;box-sizing:border-box"></textarea></label></p><button type="submit">Invia a Ollama</button></form><p><button id="refresh-jobs" type="button">Aggiorna bozze</button></p><div id="jobs"></div></section><p>Questa pagina non può approvare o pubblicare contenuti.</p></main>
 <script type="module">
 import {createClient} from "https://esm.sh/@supabase/supabase-js@2.95.0";
 const endpoint="https://acruqsduyucbrkxlqiqi.supabase.co/functions/v1/presssport-v2-queue";
@@ -13,10 +16,14 @@ const projectStatus=document.getElementById("selected-project-status");
 const draftPanel=document.getElementById("new-job");
 const otherProjectEditor=document.getElementById("other-project-editor");
 const projectJobs=document.getElementById("project-jobs");
+const projectJobFilter=document.getElementById("project-job-filter");
+const projectQueueSummary=document.getElementById("project-queue-summary");
+let visibleProjectItems=[];
+let loadedProjectSlug="";
 const loginForm=document.getElementById("login");
 const queuePanel=document.getElementById("rows");
 function showLogin(message="Sessione scaduta o non attiva. Accedi con email e password."){
- loginForm.hidden=false;queuePanel.replaceChildren();jobsArea.textContent="Accedi per visualizzare le bozze Ollama.";projectsArea.replaceChildren();note(message);
+ loginForm.hidden=false;queuePanel.replaceChildren();jobsArea.replaceChildren();projectJobs.replaceChildren();projectsArea.replaceChildren();projectSelector.replaceChildren();otherProjectEditor.hidden=true;visibleProjectItems=[];loadedProjectSlug="";projectQueueSummary.textContent="";note(message);
 }
 let client;
 function note(s){status.textContent=s}
@@ -72,7 +79,8 @@ async function loadProjects(){
 }
 function updateSelectedProject(){
  const legacy=projectSelector.value==="press-sport";
- projectStatus.textContent=legacy?"Spazio Press & Sport operativo. Le bozze sottostanti appartengono soltanto a Press & Sport.":"Spazio in preparazione: generazione e bozze non ancora abilitate. Nessun dato Press & Sport viene mostrato per questo progetto.";
+ projectJobs.replaceChildren();visibleProjectItems=[];loadedProjectSlug="";projectQueueSummary.textContent="";
+ projectStatus.textContent=legacy?"Spazio Press & Sport operativo. Le bozze sottostanti appartengono soltanto a Press & Sport.":"Spazio editoriale separato: incarichi e bozze manuali disponibili. Generazione AI cloud e pubblicazione disattivate.";
  draftPanel.hidden=!legacy;
  otherProjectEditor.hidden=legacy;
  if(!legacy)loadProjectQueue();
@@ -86,9 +94,19 @@ async function loadProjectQueue(){
  try{
   const data=await callJobs("project-list",{project_slug:selected});
   if(projectSelector.value!==selected)return;
-  projectJobs.replaceChildren();
-  const list=document.createElement("ul");
-  for(const item of data.items||[]){
+  loadedProjectSlug=selected;
+  visibleProjectItems=Array.isArray(data.items)?data.items:[];
+  renderProjectQueue();
+ }catch(e){if(projectSelector.value===selected){loadedProjectSlug="";visibleProjectItems=[];projectJobs.textContent="Coda non disponibile: "+e.message}}
+}
+function renderProjectQueue(){
+ if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value)return;
+ projectJobs.replaceChildren();
+ const filter=projectJobFilter.value.trim().toLocaleLowerCase("it");
+ const matching=visibleProjectItems.filter(item=>(String(item.external_key||"")+" "+String(item.brief||"")+" "+String(item.state||"")).toLocaleLowerCase("it").includes(filter));
+ const list=document.createElement("ul");
+ projectQueueSummary.textContent=matching.length+" incarichi visibili su "+visibleProjectItems.length+" caricati (massimo 50).";
+ for(const item of matching){
    const li=document.createElement("li");
    const label=document.createElement("strong");label.textContent=item.external_key+" · "+item.state;
    const brief=document.createElement("p");brief.textContent=item.brief;
@@ -117,17 +135,33 @@ async function loadProjectQueue(){
    }
    list.append(li);
  }
-  if(!list.childElementCount)projectJobs.textContent="Nessun incarico per questo progetto.";
+  if(!list.childElementCount)projectJobs.textContent="Nessun incarico corrispondente.";
   else projectJobs.append(list);
- }catch(e){projectJobs.textContent="Coda non disponibile: "+e.message}
 }
+projectJobFilter.addEventListener("input",renderProjectQueue);
+document.getElementById("export-project-drafts").addEventListener("click",()=>{
+ if(!loadedProjectSlug||loadedProjectSlug!==projectSelector.value){note("Seleziona un progetto e carica la coda.");return}
+ const items=visibleProjectItems;
+ const safe=(value)=>String(value??"").replace(/\r/g,"").replace(/\u0000/g,"");
+ const text=["# Archivio bozze — "+loadedProjectSlug,"","Esportazione manuale. Solo i primi 50 incarichi caricati. Nessun testo è approvato o pubblicato.",""];
+ for(const item of items){
+  text.push("## "+safe(item.external_key),"","Stato: "+safe(item.state),"","Brief:","",safe(item.brief),"");
+  if(item.draft_text)text.push("Bozza non approvata:","",safe(item.draft_text),"");
+  text.push("---","");
+ }
+ const blob=new Blob([text.join("\n")],{type:"text/markdown;charset=utf-8"});
+ const link=document.createElement("a");
+ const objectUrl=URL.createObjectURL(blob);
+ try{link.href=objectUrl;link.download="bozze-"+loadedProjectSlug+".md";document.body.append(link);link.click();link.remove();note("Esportazione locale creata. Nessun invio a servizi esterni.");}
+ finally{setTimeout(()=>URL.revokeObjectURL(objectUrl),1000)}
+});
 document.getElementById("project-job-form").addEventListener("submit",async e=>{
  e.preventDefault();
  const selected=projectSelector.value;
  if(selected==="press-sport")return;
  try{
   await callJobs("project-enqueue",{project_slug:selected,job_key:document.getElementById("project-job-key").value.trim(),brief:document.getElementById("project-job-brief").value.trim()});
-  note("Incarico salvato per "+selected+". In attesa del motore AI cloud.");
+  note("Incarico salvato per "+selected+". Coda cloud gratuita: compilazione manuale, nessuna AI a pagamento.");
   await loadProjectQueue();
  }catch(error){note("Salvataggio non riuscito: "+error.message)}
 });
