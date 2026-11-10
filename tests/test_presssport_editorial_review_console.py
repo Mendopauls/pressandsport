@@ -136,7 +136,7 @@ class EditorialConsoleTests(unittest.TestCase):
         self.assertIn('presssport_admin_project_schedule',api)
         self.assertIn("p.slug=p_slug",migration)
         self.assertIn("planned_date",migration)
-        self.assertIn("publication",html.lower())
+        self.assertIn("nessuna pubblicazione programmata",html.lower())
 
     def test_project_write_routes_are_reachable(self):
         api=(ROOT/"supabase"/"functions"/"presssport-ollama-sync"/"index.ts").read_text(encoding="utf-8")
