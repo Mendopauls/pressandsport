@@ -99,6 +99,35 @@ class GateTests(unittest.TestCase):
         self.assertTrue(parsed["linkedin_caption"])
         self.assertFalse(gated["publish_allowed"])
 
+    def test_v7_regression_upstream_block_remains_blocked(self):
+        raw = sample(ig="", li="")
+        raw["fact_checks"] = (
+            "REVISIONE UMANA OBBLIGATORIA. QA NON SUPERATA: "
+            "invalid_instagram_caption_after_retry_length_chars_1119. "
+            "NON PUBBLICARE."
+        )
+        gated = apply_quality_gate(BRIEF, raw)
+        parsed = json.loads(gated["draft"])
+        self.assertIn("upstream_qa_block", gated["issues"])
+        self.assertEqual(parsed["instagram_caption"], "")
+        self.assertEqual(parsed["linkedin_caption"], "")
+        self.assertIn("GATE AGGIUNTIVO", parsed["fact_checks"])
+        self.assertEqual(parsed["fact_checks"].count("REVISIONE UMANA OBBLIGATORIA"), 1)
+        self.assertFalse(gated["publish_allowed"])
+
+    def test_v7_prompt_echo_not_considered_valid_caption(self):
+        raw = sample(
+            ig=("Un comunicato stampa deve spiegare titolo, chi e quando. " * 10),
+            li=("PRESS & SPORT - COLLAUDO INTERNO. NON PUBBLICARE. "
+                "NESSUN EVENTO REALE. Obiettivo: "
+                "spiegare come preparare un comunicato stampa. " * 9),
+        )
+        gated = apply_quality_gate(BRIEF, raw)
+        self.assertIn("prompt_leak_linkedin_caption", gated["issues"])
+        parsed = json.loads(gated["draft"])
+        self.assertEqual(parsed["linkedin_caption"], "")
+        self.assertFalse(gated["publish_allowed"])
+
     def test_missing_metadata_never_marks_publishable(self):
         raw = sample()
         raw["visual_brief"] = ""
