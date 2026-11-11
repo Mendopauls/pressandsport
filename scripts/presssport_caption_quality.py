@@ -105,7 +105,9 @@ _UNSUPPORTED_ASSERTION_PATTERN = re.compile(
     r"la gara si terra|la squadra[^.!?]{0,90}ha vinto)\b")
 _PROMPT_LEAK_PATTERN = re.compile(
     r"\b(?:sei un editor|non pubblicare|test di editorializzazione|"
-    r"restituisci solo json|questo e un test editoriale)\b")
+    r"restituisci solo json|questo e un test editoriale|"
+    r"collaudo interno|nessun evento reale|obiettivo\s*:|"
+    r"press\s*&\s*sport\s*-\s*(?:test|collaudo))\b")
 
 
 def validate_editorial_red_flags(brief, draft):
