@@ -108,6 +108,38 @@ class StagedTests(unittest.TestCase):
         row["instagram_caption"] += " automobile"
         self.assertIn("forbidden_topic_instagram_caption", validate_grounding(brief, row))
 
+    def test_simulated_event_fabrications_fail_even_when_lengths_pass(self):
+        from scripts.presssport_caption_quality import evaluate_draft, validate_draft
+        brief = ("Obiettivo: struttura di un comunicato stampa per società sportiva. "
+                 "Nessun evento reale; NON inventare gare, risultati, date, orari "
+                 "o fonti verificate. NON PUBBLICARE.")
+        row = good()
+        row["instagram_caption"] = (
+            ("Il comunicato stampa richiede titolo, contesto e fonti da verificare. " * 7)
+            + "La squadra ha vinto il torneo regionale con 10 vittorie in 12 partite, "
+              "il 15 maggio 2023.")
+        row["linkedin_caption"] = (
+            ("Un comunicato stampa richiede dati affidabili, contatti e chiarezza. " * 10)
+            + "La gara si terrà domenica prossima alle 15.00. "
+              "La società ha già ottenuto le autorizzazioni. "
+              "Tutto è stato verificato.")
+        self.assertEqual(validate_draft(row), [])
+        errors = evaluate_draft(brief, row)
+        self.assertIn("unsupported_date_instagram_caption", errors)
+        self.assertIn("unsupported_result_instagram_caption", errors)
+        self.assertIn("unsupported_time_linkedin_caption", errors)
+        self.assertIn("unsupported_assertion_linkedin_caption", errors)
+
+    def test_instruction_leak_is_flagged_not_editorially_approved(self):
+        from scripts.presssport_caption_quality import evaluate_draft
+        brief = "Obiettivo: struttura di un comunicato stampa per società sportiva. NON PUBBLICARE."
+        row = good()
+        row["linkedin_caption"] = (
+            "Sei un editor di Press & Sport. NON PUBBLICARE. "
+            + "Il comunicato stampa deve restare informativo e accurato. " * 12)
+        errors = evaluate_draft(brief, row)
+        self.assertIn("prompt_leak_linkedin_caption", errors)
+
     def test_no_topic_metadata_still_requires_human_review(self):
         from scripts.presssport_caption_quality import validate_grounding
         self.assertEqual(validate_grounding("brief", good()), [])
