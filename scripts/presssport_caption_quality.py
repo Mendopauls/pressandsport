@@ -94,10 +94,57 @@ def validate_grounding(brief, draft):
                 errors.append("weak_topic_alignment_" + channel)
     return errors
 
+# Conservative editorial tripwires. These flag claims for review; they do not
+# prove whether an event happened. Never use them to auto-approve publication.
+_DATE_PATTERN = re.compile(r"\\b\\d{1,2}\\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+\\d{4}\\b")
+_TIME_PATTERN = re.compile(r"\\b(?:alle|ore)\\s+\\d{1,2}(?:[.:]\\d{2})\\b")
+_SCORE_PATTERN = re.compile(r"\\b\\d+\\s+(?:vittorie|sconfitte|gol|partite)\\b")
+_UNSUPPORTED_ASSERTION_PATTERN = re.compile(
+    r"\\b(?:tutto e stato verificato|la gara e stata confermata|"
+    r"ha gia ottenuto le autorizzazioni|ha verificato tutte le informazioni|"
+    r"la gara si terra|la squadra[^.!?]{0,90}ha vinto)\\b")
+_PROMPT_LEAK_PATTERN = re.compile(
+    r"\\b(?:sei un editor|non pubblicare|test di editorializzazione|"
+    r"restituisci solo json|questo e un test editoriale)\\b")
+
+
+def validate_editorial_red_flags(brief, draft):
+    """Conservative review flags for prompt leaks and unsupported specifics.
+
+    Does NOT establish factual truth. Missing a flag is not approval.
+    """
+    try:
+        obj = _parse(draft)
+    except (ValueError, TypeError):
+        return ["invalid_json"]
+    source = _fold_topic(brief)
+    simulation = any(marker in source for marker in (
+        "non inventare", "nessun evento reale", "simulazione", "nessun evento",
+    ))
+    issues = []
+    for channel in LIMITS:
+        value = obj.get(channel)
+        if not isinstance(value, str) or not value.strip():
+            continue
+        value = _fold_topic(value)
+        if _PROMPT_LEAK_PATTERN.search(value):
+            issues.append("prompt_leak_" + channel)
+        if simulation:
+            if any(match.group() not in source for match in _DATE_PATTERN.finditer(value)):
+                issues.append("unsupported_date_" + channel)
+            if any(match.group() not in source for match in _TIME_PATTERN.finditer(value)):
+                issues.append("unsupported_time_" + channel)
+            if any(match.group() not in source for match in _SCORE_PATTERN.finditer(value)):
+                issues.append("unsupported_result_" + channel)
+            if _UNSUPPORTED_ASSERTION_PATTERN.search(value):
+                issues.append("unsupported_assertion_" + channel)
+    return issues
+
 def evaluate_draft(brief, draft):
     errors = validate_draft(draft)
     if "invalid_json" not in errors:
         errors += validate_grounding(brief, draft)
+        errors += validate_editorial_red_flags(brief, draft)
     return errors
 
 
