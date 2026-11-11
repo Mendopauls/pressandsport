@@ -28,6 +28,14 @@ def apply_quality_gate(brief, raw_draft):
         value = source.get(key)
         result[key] = value if isinstance(value, str) else ""
 
+    # A prior QA failure is sticky. Never reclassify an already blocked draft
+    # as valid just because its remaining text looks syntactically correct.
+    upstream_block = "QA NON SUPERATA" in result["fact_checks"].upper()
+    if upstream_block:
+        issues.append("upstream_qa_block")
+        for channel in LIMITS:
+            result[channel] = ""
+
     if "invalid_json" in issues:
         for key in LIMITS:
             result[key] = ""
@@ -52,8 +60,21 @@ def apply_quality_gate(brief, raw_draft):
             ". NON PUBBLICARE."
         )
     old_notes = result["fact_checks"].strip()
-    result["fact_checks"] = (
-        old_notes + "\n" + editorial_note if old_notes else editorial_note
+    # Avoid repeatedly appending the same general review warning when gates
+    # run in multiple layers. Preserve earlier diagnostic notes verbatim.
+    if "REVISIONE UMANA OBBLIGATORIA" in old_notes.upper():
+        editorial_note = editorial_note.replace(
+            "REVISIONE UMANA OBBLIGATORIA. Nessuna fonte esterna "
+            "verificata automaticamente. Controllare fatti, autorizzazioni "
+            "e diritti delle immagini.", ""
+        ).strip()
+    if issues and upstream_block:
+        editorial_note = (
+            "GATE AGGIUNTIVO: " + ", ".join(sorted(set(issues))) +
+            ". NON PUBBLICARE."
+        )
+    result["fact_checks"] = "\n".join(
+        note for note in (old_notes, editorial_note) if note
     )
     return {
         "draft": json.dumps(result, ensure_ascii=False),
