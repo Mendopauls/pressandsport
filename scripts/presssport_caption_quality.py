@@ -96,16 +96,16 @@ def validate_grounding(brief, draft):
 
 # Conservative editorial tripwires. These flag claims for review; they do not
 # prove whether an event happened. Never use them to auto-approve publication.
-_DATE_PATTERN = re.compile(r"\\b\\d{1,2}\\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\\s+\\d{4}\\b")
-_TIME_PATTERN = re.compile(r"\\b(?:alle|ore)\\s+\\d{1,2}(?:[.:]\\d{2})\\b")
-_SCORE_PATTERN = re.compile(r"\\b\\d+\\s+(?:vittorie|sconfitte|gol|partite)\\b")
+_DATE_PATTERN = re.compile(r"\b\d{1,2}\s+(?:gennaio|febbraio|marzo|aprile|maggio|giugno|luglio|agosto|settembre|ottobre|novembre|dicembre)\s+\d{4}\b")
+_TIME_PATTERN = re.compile(r"\b(?:alle|ore)\s+\d{1,2}(?:[.:]\d{2})\b")
+_SCORE_PATTERN = re.compile(r"\b\d+\s+(?:vittorie|sconfitte|gol|partite)\b")
 _UNSUPPORTED_ASSERTION_PATTERN = re.compile(
-    r"\\b(?:tutto e stato verificato|la gara e stata confermata|"
+    r"\b(?:tutto e stato verificato|la gara e stata confermata|"
     r"ha gia ottenuto le autorizzazioni|ha verificato tutte le informazioni|"
-    r"la gara si terra|la squadra[^.!?]{0,90}ha vinto)\\b")
+    r"la gara si terra|la squadra[^.!?]{0,90}ha vinto)\b")
 _PROMPT_LEAK_PATTERN = re.compile(
-    r"\\b(?:sei un editor|non pubblicare|test di editorializzazione|"
-    r"restituisci solo json|questo e un test editoriale)\\b")
+    r"\b(?:sei un editor|non pubblicare|test di editorializzazione|"
+    r"restituisci solo json|questo e un test editoriale)\b")
 
 
 def validate_editorial_red_flags(brief, draft):
