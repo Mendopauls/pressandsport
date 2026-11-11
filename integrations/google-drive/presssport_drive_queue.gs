@@ -13,7 +13,9 @@ function runPressSportDriveIngest() {
   }
   const files = DriveApp.getFolderById(folderId).getFilesByType(MimeType.GOOGLE_DOCS);
   const stats = { checked: 0, accepted: 0, existing: 0, ignored: 0, failed: 0 };
-  while (files.hasNext() && stats.checked < 25) {
+  while (files.hasNext()) {
+    // Limite sulle nuove richieste: i documenti irrilevanti non bloccano la scansione.
+    if (stats.accepted >= 10 || stats.failed >= 10) break;
     const file = files.next();
     stats.checked++;
     if (!file.getName().startsWith("PS_OLLAMA_READY__")) {
