@@ -32,3 +32,30 @@ Manual activation, not yet performed:
 This automation cannot run before the separate function is deployed and
 the script owner explicitly authorizes the Google Apps Script trigger.
 This uses free-tier products subject to their quotas.
+
+
+## Stato del collaudo reale, 11 novembre 2026
+
+ATTENZIONE: il documento è stato scritto inizialmente prima del deploy.
+Lo stato verificato ora è: nuova Edge Function presssport-drive-ingest
+ATTIVA; Apps Script autorizzato manualmente dall'utente, con importazione
+di un Google Doc eseguita; Ollama qwen2.5:3b ha prodotto una bozza in
+draft_for_review. Il trigger automatico NON è stato verificato e non
+deve essere avviato finché la qualità non è sotto controllo.
+
+La prova ha individuato due difetti:
+- Instagram 159 caratteri contro minimo 450; LinkedIn 284 contro minimo 650.
+- Invenzione di automobile/team di pilotaggio per un brief sui comunicati
+  stampa delle società sportive.
+
+Il modulo Python ora include anche validate_grounding ed evaluate_draft:
+se il brief contiene la riga Obiettivo:/Tema:/Argomento:, verifica un
+minimo di sovrapposizione lessicale dei concetti in entrambe le caption.
+È possibile specificare vincoli forti facoltativi:
+QA_TOPIC_TERMS: comunicato stampa | società sportiva
+QA_FORBIDDEN_TERMS: automobile | pilotaggio
+
+Una verifica lessicale non conferma la correttezza fattuale. La revisione
+umana rimane sempre obbligatoria. Il modulo NON è ancora integrato
+nel worker Windows esistente: non dichiarare che la generazione reale
+sia stata corretta e non riavviare il bridge per questo cambiamento.
