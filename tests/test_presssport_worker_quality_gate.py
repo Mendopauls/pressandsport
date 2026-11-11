@@ -128,6 +128,51 @@ class GateTests(unittest.TestCase):
         self.assertEqual(parsed["linkedin_caption"], "")
         self.assertFalse(gated["publish_allowed"])
 
+    def test_real_editorial_prompt_1745_char_failure_is_not_publishable(self):
+        from scripts.presssport_caption_quality import evaluate_draft
+        raw = sample()
+        # Representative fragments from the actual 1745-character Ollama result:
+        # a fabricated date, a fake phone/URL, unverifiable permissions and
+        # processing instructions echoed into the caption.
+        raw["instagram_caption"] = (
+            "Il comunicato stampa include titolo, persone, tempi e luogo. "
+            "Il Comitato Sportivo Dilettantistico ha annunciato una nuova "
+            "stagione a Roma il 15 giugno 2023. "
+            "Tutte le informazioni sono state verificate da fonti ufficiali. "
+            "Per ulteriori informazioni contatta il 06-1234-5678 "
+            "o visita www.comitodilettantistico.it. "
+            "Le foto utilizzate sono state autorizzate. "
+            "Ricorda, non descrivere gare specifiche come avvenute, "
+            "non inventare nomi, date o risultati. "
+            + "Il comunicato stampa deve essere chiaro e completo. " * 12
+        )
+        brief = BRIEF + " Non inventare recapiti, siti web o autorizzazioni."
+        issues = evaluate_draft(brief, raw)
+        self.assertTrue(any(x.startswith("instagram_caption_length_") for x in issues))
+        self.assertIn("unsupported_date_instagram_caption", issues)
+        self.assertIn("unsupported_phone_instagram_caption", issues)
+        self.assertIn("unsupported_url_instagram_caption", issues)
+        self.assertIn("unsupported_verification_instagram_caption", issues)
+        self.assertIn("prompt_leak_instagram_caption", issues)
+
+        gated = apply_quality_gate(brief, raw)
+        data = json.loads(gated["draft"])
+        self.assertEqual(data["instagram_caption"], "")
+        self.assertTrue(data["linkedin_caption"])
+        self.assertFalse(gated["publish_allowed"])
+        self.assertIn("QA NON SUPERATA", data["fact_checks"])
+
+    def test_phone_or_url_provided_in_brief_not_automatically_invented(self):
+        from scripts.presssport_caption_quality import validate_editorial_red_flags
+        brief = BRIEF + " Contatti confermati: 06-1234-5678 e www.sportclub.it."
+        raw = sample(ig=(
+            "Il comunicato stampa della societa sportiva riporta solo "
+            "i dati forniti nel brief: 06-1234-5678 e www.sportclub.it. "
+        ) * 6)
+        issues = validate_editorial_red_flags(brief, raw)
+        self.assertNotIn("unsupported_phone_instagram_caption", issues)
+        self.assertNotIn("unsupported_url_instagram_caption", issues)
+
     def test_missing_metadata_never_marks_publishable(self):
         raw = sample()
         raw["visual_brief"] = ""
