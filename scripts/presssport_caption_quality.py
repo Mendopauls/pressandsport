@@ -107,7 +107,16 @@ _PROMPT_LEAK_PATTERN = re.compile(
     r"\b(?:sei un editor|non pubblicare|test di editorializzazione|"
     r"restituisci solo json|questo e un test editoriale|"
     r"collaudo interno|nessun evento reale|obiettivo\s*:|"
-    r"press\s*&\s*sport\s*-\s*(?:test|collaudo))\b")
+    r"press\s*&\s*sport\s*-\s*(?:test|collaudo)|"
+    r"ricorda,?\s*non descrivere|non inventare nomi|"
+    r"evita ripetizioni e?\s+esempi fittizi)\b")
+_URL_PATTERN = re.compile(
+    r"\b(?:https?://|www\.)[^\s<>()]+|"
+    r"\b[a-z][a-z0-9-]{2,}\.(?:it|com|org|net|eu|es)\b")
+_PHONE_PATTERN = re.compile(
+    r"(?<!\w)(?:\+39[-.\s]?)?(?:0\d{1,3}[-.\s])?"
+    r"\d{2,4}[-.\s]\d{3,4}[-.\s]\d{3,5}(?!\w)")
+
 
 
 def validate_editorial_red_flags(brief, draft):
@@ -140,6 +149,18 @@ def validate_editorial_red_flags(brief, draft):
                 issues.append("unsupported_result_" + channel)
             if _UNSUPPORTED_ASSERTION_PATTERN.search(value):
                 issues.append("unsupported_assertion_" + channel)
+            if any(match.group().rstrip(".,;:") not in source
+                   for match in _URL_PATTERN.finditer(value)):
+                issues.append("unsupported_url_" + channel)
+            if any(match.group() not in source
+                   for match in _PHONE_PATTERN.finditer(value)):
+                issues.append("unsupported_phone_" + channel)
+            if re.search(
+                r"\b(?:tutte? le informazioni (?:sono state|e stata) verificate|"
+                r"(?:le foto|le fotografie)[^.?!]{0,120}"
+                r"(?:sono state|risultano) autorizzate)\b", value
+            ):
+                issues.append("unsupported_verification_" + channel)
     return issues
 
 def evaluate_draft(brief, draft):
