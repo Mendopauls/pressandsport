@@ -1,0 +1,33 @@
+name: PressSport staged Drive import and caption tests
+on:
+  push:
+    paths:
+      - 'integrations/google-drive/presssport_drive_queue.gs'
+      - 'supabase/functions/presssport-drive-ingest/**'
+      - 'scripts/presssport_caption_quality.py'
+      - 'tests/test_presssport_drive_ingest_quality.py'
+      - '.github/workflows/presssport-drive-ingest-quality.yml'
+  pull_request:
+    paths:
+      - 'integrations/google-drive/presssport_drive_queue.gs'
+      - 'supabase/functions/presssport-drive-ingest/**'
+      - 'scripts/presssport_caption_quality.py'
+      - 'tests/test_presssport_drive_ingest_quality.py'
+      - '.github/workflows/presssport-drive-ingest-quality.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline staging checks
+        run: python -m unittest discover -s tests -p 'test_presssport_drive_ingest_quality.py' -v
+      - name: Google Apps Script syntax
+        run: |
+          cp integrations/google-drive/presssport_drive_queue.gs /tmp/presssport_drive_queue.js
+          node --check /tmp/presssport_drive_queue.js
